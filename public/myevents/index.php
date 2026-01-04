@@ -70,7 +70,7 @@ include '../_head.php';
                                 </table>
 <?php
                             } else {
-                                echo ('<div class="alert alert-info mt-3"><h5>No events for this season yet.</h5><p>Welcome to the My Events page! Once you contribute some data for at least one match at an event, the event will be added to this list. Then you\'ll be able to view and/or download all of that event\'s data from here.</p><p>Click the + button above to choose an event and start adding data.</p></div>');
+                                echo ('<div class="alert alert-info mt-3"><h5>No events for this season yet.</h5><p>Welcome to the My Events page! Once you contribute some data for at least one match at an event, the event will be added to this list. Then you\'ll be able to view and/or download all of that event\'s data from here.</p><p>Click the + button above to choose an event and start adding data.</p><p>If you want to test submitting without logging data on an actual event, may we recommend <a href="/myevents/event/2026TEST">2026TEST</a> 😁</p></div>');
                             }
 
 ?>

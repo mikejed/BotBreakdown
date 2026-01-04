@@ -97,6 +97,7 @@ $recentMatchData = $recentMatchResult->fetch_all(MYSQLI_ASSOC);
 // Charts and KPIs
 echo('
 <div class="container">
+    <span class="float-end mt-4"><a href="getEventTeamList.php?event=' . $_GET["event"] . '" title="For loading team lists into analytics">Team List</a></span>
     <h1>' . $eventName . '</h1><hr>');
 ?>
     <div class="row">
@@ -257,7 +258,7 @@ echo("
         $availableTeamsData = $availableTeamsResult->fetch_all(MYSQLI_ASSOC);
 
         foreach( $availableTeamsData as $team ) {
-            echo("<div class=\"col-sm-2\"><a href=\"/myevents/teamData.php?event=" . $_GET['event'] . "&team=" . $team['teamNumber'] . "\" class=\"btn btn-outline-secondary\" style=\"width:100%;\">" . $team['teamNumber'] . "</a></div>");
+            echo("<div class=\"col-4 col-lg-2 mb-1\"><a href=\"/myevents/teamData.php?event=" . $_GET['event'] . "&team=" . $team['teamNumber'] . "\" class=\"btn btn-outline-secondary\" style=\"width:100%;\">" . $team['teamNumber'] . "</a></div>");
         }
     ?>
 
@@ -287,8 +288,6 @@ if (isset($_GET['event'])) {
         echo("<a href=\"" . $_SERVER['REQUEST_URI'] . "&allData=true\" class=\"btn btn-outline-warning\">Show all fields</a>");
     }
     echo("</div>");
-    
-    echo "<div class=\"container\"><div class=\"table-responsive\" style=\"clear:both;\"><table class=\"table table-striped table-hover\"><thead><tr>";
 
     $dataPointGet = $db->prepare("SELECT `id`, `name`, `dataType` FROM `dataPoint` WHERE `season` = ? $showAllData");
     $dataPointGet->bind_param("i",substr($_GET['event'],0,4));
@@ -296,127 +295,131 @@ if (isset($_GET['event'])) {
     $dataPointGetResult = $dataPointGet->get_result();
     $dataPointGetResultData = $dataPointGetResult->fetch_all(MYSQLI_ASSOC);
 
-    $dataPointColumns = "";
-    $joinColumns = "";
-    echo "<th>Match Number</th><th>Team Number</th>";
-    foreach ($dataPointGetResultData as $dataItem) {
-        if (strlen($dataPointColumns) > 0) {
-            $dataPointColumns .= ", ";
-            $joinColumns .= "\n";
-        }
-        echo ("<th>" . $dataItem["name"] . "</th>");
-        if ($dataItem["dataType"] == "text") {
-            // There's no way to "average" text. Original decision: let "yes" values override "no" values. So get distinct text that's not equal to "no" and if there's nothing left THEN show "no". But see comment below- this wasn't desirable. Need to check and see how this handles multiple submissions now.
-            $dataPointColumns .= "(
-                                    SELECT IFNULL( GROUP_CONCAT(DISTINCT sd.`dataText` SEPARATOR '<br>'), '') -- Note: this used to use 'No' as the IFNULL replace string. This caused 'no' to show up where blanks made more sense.
-                                    FROM
-                                        `submissionData` sd
-                                        INNER JOIN `dataPoint` dp ON sd.`dataPointId` = dp.`id`-- AND sd.`dataText` <> 'no'
-                                        INNER JOIN `submission` s ON sd.`submissionId` = s.`id`
-                                    WHERE
-                                        s.`teamMatchId` = tm.`id`
-                                        AND sd.dataPointId = " . $dataItem["id"] . "
-                                        $showAllData
-                                        AND (SELECT count(1) FROM `flag` WHERE `submissionId` = s.`id`) < $flagThreshold
-                                ) AS `" . $dataItem["name"] . "`\n";
-        } else {
-            $dataPointColumns .= "(
-                                    SELECT ROUND(AVG(sd.`dataValue`),0)
-                                    FROM
-                                        `submissionData` sd
-                                        INNER JOIN `dataPoint` dp ON sd.`dataPointId` = dp.`id`
-                                        INNER JOIN `submission` s ON sd.`submissionId` = s.`id`
-                                    WHERE
-                                        s.`teamMatchId` = tm.`id`
-                                        AND dataPointId = " . $dataItem["id"] . "
-                                        $showAllData
-                                        AND (SELECT count(1) FROM `flag` WHERE `submissionId` = s.`id`) < $flagThreshold
-                                  ) AS `" . $dataItem["name"] . "`\n";
-        }
-        
-        $joinColumns .= "RIGHT OUTER JOIN `submissionData` data" . $dataItem["id"] . " ON dp.`id` = data" . $dataItem["id"] . ".`dataPointId` AND tm.`id` = data" . $dataItem["id"] . ".`teamMatchId`";
-    }
-    echo "<th>Alliance</th><th></th></thead><tbody>";
+    if ($dataPointGetResult->num_rows > 0) {
+        echo("<div class=\"container\"><div class=\"table-responsive\" style=\"clear:both;\"><table class=\"table table-striped table-hover\"><thead><tr>");
 
-    // set up the query that we'll use to update the teamMatch columns from the FIRST api.
-    $matchResultsUpdate = $db->prepare("UPDATE `teamMatch` SET `alliance` = ?, `allianceResults` = ?, `allianceResultsRetrievalDateTime` = CURRENT_TIMESTAMP WHERE `id` = ?");
-
-    $matchGet = $db->prepare("SELECT
-                                tm.`id` AS `teamMatchId`
-                                , tm.`match`
-                                , tm.`teamNumber`
-                                , $dataPointColumns
-                                , tm.`alliance`
-                                , tm.`allianceResults`
-                            FROM
-                                `teamMatch` tm
-                            WHERE
-                                tm.`event` = ?
-                                AND tm.`match` > 0
-                            ORDER BY
-                                tm.`match`
-                                , tm.`id`;
-                            ");
-    $matchGet->bind_param("s", $_GET['event']);
-    $matchGet->execute();
-    $matchGetResult = $matchGet->get_result();
-    $matchGetResultData = $matchGetResult->fetch_all(MYSQLI_ASSOC);
-
-    foreach ($matchGetResultData as $row) {
-        $setAlliance = "";
-        $setResults = "";
-        
-        // If the stored alliance data for the team's alliance is either too short OR if it's been stored but the scores weren't in yet (using Red Alliance final score as the canary for this test), we need to try and store/update it in the teamMatch table.
-        if (strlen($row["allianceResults"]) < 5 || (json_validate($row["allianceResults"]) && isset(json_decode($row["allianceResults"], true)["scoreRedFinal"]) == false)) {
-
-            // See if we've already gotten the event data from the API for this page load. (One call contains the data from all the event's matches). If not, get it.
-            if (isset($allianceContent) == false) {
-                $allianceContent = curl_exec($matchRequest);
-                $err     = curl_errno($matchRequest);
-                $errmsg  = curl_error($matchRequest);
+        $dataPointColumns = "";
+        $joinColumns = "";
+        echo "<th>Match Number</th><th>Team Number</th>";
+        foreach ($dataPointGetResultData as $dataItem) {
+            if (strlen($dataPointColumns) > 0) {
+                $dataPointColumns .= ", ";
+                $joinColumns .= "\n";
             }
+            echo ("<th>" . $dataItem["name"] . "</th>");
+            if ($dataItem["dataType"] == "text") {
+                // There's no way to "average" text. Original decision: let "yes" values override "no" values. So get distinct text that's not equal to "no" and if there's nothing left THEN show "no". But see comment below- this wasn't desirable. Need to check and see how this handles multiple submissions now.
+                $dataPointColumns .= "(
+                                        SELECT IFNULL( GROUP_CONCAT(DISTINCT sd.`dataText` SEPARATOR '<br>'), '') -- Note: this used to use 'No' as the IFNULL replace string. This caused 'no' to show up where blanks made more sense.
+                                        FROM
+                                            `submissionData` sd
+                                            INNER JOIN `dataPoint` dp ON sd.`dataPointId` = dp.`id`-- AND sd.`dataText` <> 'no'
+                                            INNER JOIN `submission` s ON sd.`submissionId` = s.`id`
+                                        WHERE
+                                            s.`teamMatchId` = tm.`id`
+                                            AND sd.dataPointId = " . $dataItem["id"] . "
+                                            $showAllData
+                                            AND (SELECT count(1) FROM `flag` WHERE `submissionId` = s.`id`) < $flagThreshold
+                                    ) AS `" . $dataItem["name"] . "`\n";
+            } else {
+                $dataPointColumns .= "(
+                                        SELECT ROUND(AVG(sd.`dataValue`),0)
+                                        FROM
+                                            `submissionData` sd
+                                            INNER JOIN `dataPoint` dp ON sd.`dataPointId` = dp.`id`
+                                            INNER JOIN `submission` s ON sd.`submissionId` = s.`id`
+                                        WHERE
+                                            s.`teamMatchId` = tm.`id`
+                                            AND dataPointId = " . $dataItem["id"] . "
+                                            $showAllData
+                                            AND (SELECT count(1) FROM `flag` WHERE `submissionId` = s.`id`) < $flagThreshold
+                                    ) AS `" . $dataItem["name"] . "`\n";
+            }
+            
+            $joinColumns .= "RIGHT OUTER JOIN `submissionData` data" . $dataItem["id"] . " ON dp.`id` = data" . $dataItem["id"] . ".`dataPointId` AND tm.`id` = data" . $dataItem["id"] . ".`teamMatchId`";
+        }
+        echo "<th>Alliance</th><th></th></thead><tbody>";
 
-            // Now use the data we've gotten - make sure it's valid. If so, determine the alliance for this particular team/match.
-            if (json_validate($allianceContent)) {
-                $a_Matches = json_decode($allianceContent, true)["Matches"];
-                foreach ($a_Matches as $match) {
-                    if ($match["matchNumber"] == $row["match"]) {
-                        foreach ($match["teams"] as $team) {
-                            if ($team["teamNumber"] == $row["teamNumber"]) {
-                                if (str_starts_with($team["station"], "Red")) {
-                                    // "Red";
-                                    $setAlliance = "Red";
-                                    $row["alliance"] = "Red";
-                                    $setResults = json_encode($match);
+        // set up the query that we'll use to update the teamMatch columns from the FIRST api.
+        $matchResultsUpdate = $db->prepare("UPDATE `teamMatch` SET `alliance` = ?, `allianceResults` = ?, `allianceResultsRetrievalDateTime` = CURRENT_TIMESTAMP WHERE `id` = ?");
 
-                                } else if (str_starts_with($team["station"], "Blue")) {
-                                    // "Blue";
-                                    $setAlliance = "Blue";
-                                    $row["alliance"] = "Blue";
-                                    $setResults = json_encode($match);
+        $matchGet = $db->prepare("SELECT
+                                    tm.`id` AS `teamMatchId`
+                                    , tm.`match`
+                                    , tm.`teamNumber`
+                                    , $dataPointColumns
+                                    , tm.`alliance`
+                                    , tm.`allianceResults`
+                                FROM
+                                    `teamMatch` tm
+                                WHERE
+                                    tm.`event` = ?
+                                    AND tm.`match` > 0
+                                ORDER BY
+                                    tm.`match`
+                                    , tm.`id`;
+                                ");
+        $matchGet->bind_param("s", $_GET['event']);
+        $matchGet->execute();
+        $matchGetResult = $matchGet->get_result();
+        $matchGetResultData = $matchGetResult->fetch_all(MYSQLI_ASSOC);
+
+        foreach ($matchGetResultData as $row) {
+            $setAlliance = "";
+            $setResults = "";
+            
+            // If the stored alliance data for the team's alliance is either too short OR if it's been stored but the scores weren't in yet (using Red Alliance final score as the canary for this test), we need to try and store/update it in the teamMatch table.
+            if (strlen($row["allianceResults"]) < 5 || (json_validate($row["allianceResults"]) && isset(json_decode($row["allianceResults"], true)["scoreRedFinal"]) == false)) {
+
+                // See if we've already gotten the event data from the API for this page load. (One call contains the data from all the event's matches). If not, get it.
+                if (isset($allianceContent) == false) {
+                    $allianceContent = curl_exec($matchRequest);
+                    $err     = curl_errno($matchRequest);
+                    $errmsg  = curl_error($matchRequest);
+                }
+
+                // Now use the data we've gotten - make sure it's valid. If so, determine the alliance for this particular team/match.
+                if (json_validate($allianceContent)) {
+                    $a_Matches = json_decode($allianceContent, true)["Matches"];
+                    foreach ($a_Matches as $match) {
+                        if ($match["matchNumber"] == $row["match"]) {
+                            foreach ($match["teams"] as $team) {
+                                if ($team["teamNumber"] == $row["teamNumber"]) {
+                                    if (str_starts_with($team["station"], "Red")) {
+                                        // "Red";
+                                        $setAlliance = "Red";
+                                        $row["alliance"] = "Red";
+                                        $setResults = json_encode($match);
+
+                                    } else if (str_starts_with($team["station"], "Blue")) {
+                                        // "Blue";
+                                        $setAlliance = "Blue";
+                                        $row["alliance"] = "Blue";
+                                        $setResults = json_encode($match);
+                                    }
                                 }
-                            }
 
-                            // Now if we found the alliance, update the alliance data into the [teamMatch] table
-                            if (isset($setAlliance) && $setAlliance  <> "") {
-                                $matchResultsUpdate->bind_param("ssi", $setAlliance, $setResults, $row["teamMatchId"]);
-                                $matchResultsUpdate->execute();
-                                break;
+                                // Now if we found the alliance, update the alliance data into the [teamMatch] table
+                                if (isset($setAlliance) && $setAlliance  <> "") {
+                                    $matchResultsUpdate->bind_param("ssi", $setAlliance, $setResults, $row["teamMatchId"]);
+                                    $matchResultsUpdate->execute();
+                                    break;
+                                }
                             }
                         }
                     }
                 }
             }
+
+            // Can we get back to just showing the data please?
+            $teamMatchId = $row["teamMatchId"];
+            unset($row["teamMatchId"]);
+            unset($row["allianceResults"]);
+            echo ("<tr><td>" . implode("</td><td>", $row) . "</td><td><a class=\"btn btn-info btn-sm\" href=\"viewSubmissions.php?event=" . $_GET['event'] . "&match=" . $row["match"] . "\">View Submissions</a></td></tr>");
         }
 
-        // Can we get back to just showing the data please?
-        $teamMatchId = $row["teamMatchId"];
-        unset($row["teamMatchId"]);
-        unset($row["allianceResults"]);
-        echo ("<tr><td>" . implode("</td><td>", $row) . "</td><td><a class=\"btn btn-info btn-sm\" href=\"viewSubmissions.php?event=" . $_GET['event'] . "&match=" . $row["match"] . "\">View Submissions</a></td></tr>");
+        echo "</tbody></table></div></div>";
     }
-
-    echo "</tbody></table></div></div>";
 }
 
 

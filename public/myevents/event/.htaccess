@@ -5,5 +5,5 @@ RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
-# Rule to rewrite requests for /{value} to /2025.php?event={value}
-RewriteRule ^([^/]+)(?!\.php)/?$ 2025.php?event=$1 [L,QSA]
+# Rule to rewrite requests for /{value} to /2026.php?event={value}
+RewriteRule ^([^/]+)(?!\.php)/?$ 2026.php?event=$1 [L,QSA]

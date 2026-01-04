@@ -33,8 +33,9 @@ $errmsg  = curl_error($eventRequest);
         <li class="nav-item"><a href="javascript:$('.eventCard').hide();$('.week4').show();$('.nav-link').removeClass('active');$('#navWeek4').addClass('active');" id="navWeek4" class="nav-link">Week 4</a></li>
         <li class="nav-item"><a href="javascript:$('.eventCard').hide();$('.week5').show();$('.nav-link').removeClass('active');$('#navWeek5').addClass('active');" id="navWeek5" class="nav-link">Week 5</a></li>
         <li class="nav-item"><a href="javascript:$('.eventCard').hide();$('.week6').show();$('.nav-link').removeClass('active');$('#navWeek6').addClass('active');" id="navWeek6" class="nav-link">Week 6</a></li>
+        <li class="nav-item"><a href="javascript:$('.eventCard').hide();$('.week7').show();$('.nav-link').removeClass('active');$('#navWeek7').addClass('active');" id="navWeek7" class="nav-link">Week 7</a></li>
 
-        <li class="nav-item"><a href="javascript:$('.eventCard').hide();$('.week8').show();$('.nav-link').removeClass('active');$('#navWeek8').addClass('active');" id="navWeek8" class="nav-link">Finals</a></li>
+        <li class="nav-item"><a href="javascript:$('.eventCard').hide();$('.week9').show();$('.nav-link').removeClass('active');$('#navWeek8').addClass('active');" id="navWeek8" class="nav-link">Finals</a></li>
 
         <li class="nav-item"><a href="javascript:$('.eventCard').hide();$('.post05').show();$('.nav-link').removeClass('active');$('#nav05').addClass('active');" id="nav05" class="nav-link">May</a></li>
         <li class="nav-item"><a href="javascript:$('.eventCard').hide();$('.post06').show();$('.nav-link').removeClass('active');$('#nav06').addClass('active');" id="nav06" class="nav-link">June</a></li>
