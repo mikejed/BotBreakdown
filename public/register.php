@@ -157,41 +157,28 @@ echo ('<div class="container">');
                     $storePending->execute();
 
                     // Send Email
-                    $templateData = '{
-                        "from":{
-                            "email":"account@botbreakdown.com"
+                    $data = '{
+                        "sender":{
+                            "email":"account@botbreakdown.com",
+                            "name":"BotBreakdown Auth"
                         },
-                        "personalizations":[
+                        "to":[
                             {
-                                "to":[
-                                    {
-                                    "email":"' . $_POST["email"] . '"
-                                    }
-                                ],
-                                "dynamic_template_data":{
-                                    "name": "' . $name . '",
-                                    "totp": "' . $totp . '",
-                                    "token": "' . $token . '"
-                                }
+                                "email":"' . $_POST["email"] . '"
                             }
                         ],
-                        "template_id":"d-9d66fdb1231d4e018870e05d1175a5a6",
-                        "mail_settings": {
-                            "bypass_list_management": {
-                                "enable": true
-                            }
+                        "templateId":2,
+                        "params":{
+                            "name": "' . $name . '",
+                            "totp": "' . $totp . '",
+                            "token": "' . $token . '"
                         }
                     }';
 
-                    $emailRequest = curl_init("https://api.sendgrid.com/v3/mail/send");
+                    $emailRequest = curl_init("https://api.brevo.com/v3/smtp/email");
 
-                    curl_setopt($emailRequest, CURLOPT_POST, 1);
-                    curl_setopt($emailRequest, CURLOPT_RETURNTRANSFER, 1);
-                    curl_setopt($emailRequest, CURLOPT_HTTPHEADER, [
-                        'Authorization: Bearer ' . $sendGridApiKey,
-                        'Content-Type: application/json'
-                    ]);
-                    curl_setopt($emailRequest, CURLOPT_POSTFIELDS, $templateData);
+                    curl_setopt_array($emailRequest, $brevoCurlOpt);
+                    curl_setopt($emailRequest, CURLOPT_POSTFIELDS, $data);
 
                     $response = curl_exec($emailRequest);
 

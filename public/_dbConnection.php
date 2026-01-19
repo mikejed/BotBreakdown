@@ -78,6 +78,7 @@ $sql = "SELECT
             , (SELECT `value` FROM `setting` WHERE `key` = 'flagThreshold') AS 'flagThreshold'
             , (SELECT `value` FROM `setting` WHERE `key` = 'blueAllianceApiKey') AS 'blueAllianceApiKey'
             , (SELECT `value` FROM `setting` WHERE `key` = 'sendGridApiKey') AS 'sendGridApiKey'
+            , (SELECT `value` FROM `setting` WHERE `key` = 'brevoApiKey') AS 'brevoApiKey'
             , (SELECT `value` FROM `setting` WHERE `key` = 'firstApiAuthToken') AS 'firstApiAuthToken'
         ;";
 $result = $db->query($sql);
@@ -131,6 +132,7 @@ $tbaCurlOpt = array(
     CURLOPT_VERBOSE        => 1              
 );
 
+/*
 // set up SendGrid parameters too.
 $sendGridApiKey = $settings["sendGridApiKey"];
 $sgHeaders = array(
@@ -149,6 +151,27 @@ $sgCurlOpt = array(
     CURLOPT_MAXREDIRS      => 10,           // stop after 10 redirects
     CURLOPT_HTTPHEADER     => $sgHeaders,
     CURLOPT_VERBOSE        => 1
-)
+);
+*/
+
+// replace SendGrid with Brevo
+$brevoApiKey = $settings["brevoApiKey"];
+$brevoHeaders = array(
+    "api-key: $brevoApiKey"
+    ,"Content-Type: application/json"
+);
+$brevoCurlOpt = array(
+    CURLOPT_CUSTOMREQUEST  => "POST",
+    CURLOPT_RETURNTRANSFER => true,         // return web page
+    CURLOPT_HEADER         => false,        // don't return headers
+    CURLOPT_FOLLOWLOCATION => true,         // follow redirects
+    CURLOPT_USERAGENT      => $bbUserAgent,
+    CURLOPT_AUTOREFERER    => true,         // set referer on redirect
+    CURLOPT_CONNECTTIMEOUT => 120,          // timeout on connect
+    CURLOPT_TIMEOUT        => 120,          // timeout on response
+    CURLOPT_MAXREDIRS      => 10,           // stop after 10 redirects
+    CURLOPT_HTTPHEADER     => $brevoHeaders,
+    CURLOPT_VERBOSE        => 1
+);
 
 ?>

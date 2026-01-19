@@ -109,40 +109,26 @@ echo ('<div class="container">');
 
                 // Send Email
                 $data = '{
-                    "from":{
+                    "sender":{
                         "email":"account@botbreakdown.com",
                         "name":"BotBreakdown Auth"
                     },
-                    "personalizations":[
+                    "to":[
                         {
-                            "to":[
-                                {
-                                "email":"' . $foundScouterData[0]["email"] . '"
-                                }
-                            ],
-                            "dynamic_template_data":{
-                                "displayName": "' . $foundScouterData[0]["name"] . '",
-                                "totp": "' . $totp . '",
-                                "token": "' . $token . '"
-                            }
+                            "email":"' . $foundScouterData[0]["email"] . '"
                         }
                     ],
-                    "template_id":"d-7dfe54220a5f4847891b61213434d8cf",
-                    "mail_settings": {
-                        "bypass_list_management": {
-                            "enable": true
-                        }
+                    "templateId":1,
+                    "params":{
+                        "displayName": "' . $foundScouterData[0]["name"] . '",
+                        "totp": "' . $totp . '",
+                        "token": "' . $token . '"
                     }
                 }';
 
-                $emailRequest = curl_init("https://api.sendgrid.com/v3/mail/send");
+                $emailRequest = curl_init("https://api.brevo.com/v3/smtp/email");
 
-                curl_setopt($emailRequest, CURLOPT_POST, 1);
-                curl_setopt($emailRequest, CURLOPT_RETURNTRANSFER, 1);
-                curl_setopt($emailRequest, CURLOPT_HTTPHEADER, [
-                    'Authorization: Bearer ' . $sendGridApiKey,
-                    'Content-Type: application/json'
-                ]);
+                curl_setopt_array($emailRequest, $brevoCurlOpt);
                 curl_setopt($emailRequest, CURLOPT_POSTFIELDS, $data);
 
                 $response = curl_exec($emailRequest);

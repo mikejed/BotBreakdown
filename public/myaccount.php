@@ -22,38 +22,24 @@ if (isset($_POST["newEmail"]) && strlen($_POST["newEmail"]) > 4 ) {
 
     // send email to current address
     $data = '{
-        "from":{
+        "sender":{
             "email":"account@botbreakdown.com",
             "name":"BotBreakdown Auth"
         },
-        "personalizations":[
+        "to":[
             {
-                "to":[
-                    {
-                    "email":"' . $foundScouterData[0]["email"] . '"
-                    }
-                ],
-                "dynamic_template_data":{
-                    "token": "' . $code1 . '"
-                }
+                "email":"' . $foundScouterData[0]["email"] . '"
             }
         ],
-        "template_id":"d-bdcf1e05e8b44f78b091e325f3057681",
-        "mail_settings": {
-            "bypass_list_management": {
-                "enable": true
-            }
+        "templateId":3,
+        "params":{
+            "token": "' . $code1 . '"
         }
     }';
 
-    $emailRequest = curl_init("https://api.sendgrid.com/v3/mail/send");
+    $emailRequest = curl_init("https://api.brevo.com/v3/smtp/email");
 
-    curl_setopt($emailRequest, CURLOPT_POST, 1);
-    curl_setopt($emailRequest, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($emailRequest, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $sendGridApiKey,
-        'Content-Type: application/json'
-    ]);
+    curl_setopt_array($emailRequest, $brevoCurlOpt);
     curl_setopt($emailRequest, CURLOPT_POSTFIELDS, $data);
 
     $response = curl_exec($emailRequest);
@@ -62,38 +48,24 @@ if (isset($_POST["newEmail"]) && strlen($_POST["newEmail"]) > 4 ) {
 
     // send email to new address
     $data = '{
-        "from":{
+        "sender":{
             "email":"account@botbreakdown.com",
             "name":"BotBreakdown Auth"
         },
-        "personalizations":[
+        "to":[
             {
-                "to":[
-                    {
-                    "email":"' . $_POST["newEmail"] . '"
-                    }
-                ],
-                "dynamic_template_data":{
-                    "token": "' . $code2 . '"
-                }
+                "email":"' . $_POST["newEmail"] . '"
             }
         ],
-        "template_id":"d-bdcf1e05e8b44f78b091e325f3057681",
-        "mail_settings": {
-            "bypass_list_management": {
-                "enable": true
-            }
+        "templateId":3,
+        "params":{
+            "token": "' . $code1 . '"
         }
     }';
 
-    $emailRequest = curl_init("https://api.sendgrid.com/v3/mail/send");
+    $emailRequest = curl_init("https://api.brevo.com/v3/smtp/email");
 
-    curl_setopt($emailRequest, CURLOPT_POST, 1);
-    curl_setopt($emailRequest, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($emailRequest, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $sendGridApiKey,
-        'Content-Type: application/json'
-    ]);
+    curl_setopt_array($emailRequest, $brevoCurlOpt);
     curl_setopt($emailRequest, CURLOPT_POSTFIELDS, $data);
 
     $response = curl_exec($emailRequest);
