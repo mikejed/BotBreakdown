@@ -71,7 +71,7 @@ include './_head.php';
 
         <div class="alert alert-info mt-4">
             <h4>Latest Update</h4>
-            <p>After several great off-season events at ARL, the Arizona Championship (data <a href="/myevents/viewData.php?event=2024AZTem">here</a>) was the premiere event for BotBreakdown in the 2024 season. And the 2025 dashboards are now ready for use - including great new features for visualizing a team's autonomous paths from an entire event. BotBreakdown is out of beta and officially launched!</p>
+            <p>The season and schedules have been updated for the 2026 season - we're looking forward to the kickoff and seeing what the game is this year! The scoring and boards will be updated as soon as we can once it's revealed.</p>
         </div>
         
     </div>

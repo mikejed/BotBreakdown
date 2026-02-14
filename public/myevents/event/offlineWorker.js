@@ -12,8 +12,8 @@ const urlsToCache = [
     "https://code.jquery.com/jquery-3.7.1.min.js",
     "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js",
     "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js.map",
-    '/assets/images/2025/blue-court-500.png',
-    '/assets/images/2025/red-court-500.png',
+    '/assets/images/2026/blue-court-500.png',
+    '/assets/images/2026/red-court-500.png',
 ];
 
 self.addEventListener('install', event => {

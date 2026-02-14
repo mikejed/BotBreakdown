@@ -161,14 +161,139 @@ if ( isset($_GET["event"]) ) {
                                     </div>
                                 </span>
                                 <br>
-                                <canvas id="drawingCanvas" width="500" height="426" style="width: 100%; height: auto; background-image: url(''); background-size: cover;"></canvas>
+                                <canvas id="drawingCanvas" width="500" height="318" style="width: 100%; height: auto; background-image: url(''); background-size: cover;"></canvas>
+                            </div>
+                            <div class="col-md-5" style="border-left: 1px solid #999;">
+                                <label class="form-label">Autonomous Climb</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" id="auto-climb-none" name="auto-climb" value="0">
+                                    <label class="form-check-label" for="auto-climb-none">Not attempted</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" id="auto-climb-unsuccessful" name="auto-climb" value="1">
+                                    <label class="form-check-label" for="auto-climb-unsuccessful">Unsuccessful</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" id="auto-climb-successful" name="auto-climb" value="2">
+                                    <label class="form-check-label" for="auto-climb-successful">Successful</label>
+                                </div>
+
+                                
+                                <div class="col-sm mt-4">
+                                    <label class="form-label">Shooting Cycles</label>
+                                    <table style="width: 100%;">
+                                        <tbody>
+                                            <tr>
+                                                <td id="autoTimer" style="text-align: center; font-size: 3.5rem;">0.0</td>
+                                                <td style="text-align: right; width: 20%;">
+                                                    <a id="autoTimerBtn" class="btn btn-big btn-success p-5 float-end"><i class="fa fa-play fa-fw"></i></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <table style="clear: right; width: 100%;">
+                                        <thead>
+                                            <tr>
+                                                <th>Time<br><small>(sec)</small></th>
+                                                <th>Fuel scored</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="autoSessionsList">
+                                        </tbody>
+                                    </table>
+                                    <input type="hidden" id="autoSessionsData" name="autoSessionsData" value="[]">
+                                    <input type="hidden" id="autoCompositeScore" name="autoCompositeScore" value="0">
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="tab-pane fade" id="nav-tele" role="tabpanel" aria-labelledby="nav-tele-tab">
-
+                        <div class="row">
+                            <div class="col-md order-1 order-md-0">
+                                <div class="row">
+                                    <div class="col-sm">
+                                        <label class="form-label">Role</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="role-defense" name="role-defense" value="Defense">
+                                            <label class="form-check-label" for="role-defense">Defense</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="role-offense" name="role-offense" value="Offense">
+                                            <label class="form-check-label" for="role-offense">Offense</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="role-feeder" name="role-feeder" value="Feeder">
+                                            <label class="form-check-label" for="role-feeder">Feeder</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="role-outpost" name="role-outpost" value="Outpost">
+                                            <label class="form-check-label" for="role-outpost">Outpost Loader</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="role-depot" name="role-depot" value="Depot">
+                                            <label class="form-check-label" for="role-depot">Depot Dumper</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="role-other" name="role-other" value="Other">
+                                            <label class="form-check-label" for="role-other">Other</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm">
+                                        <label class="form-label">
+                                            Endgame
+                                            <sup><i class="fa-solid fa-circle-info text-primary" data-bs-toggle="tooltip" data-bs-html="true" title="Where the robot actually ended the match - regardless of whether another ending was attempted."></i></sup>
+                                        </label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" id="endgame-none" name="endgame" value="0">
+                                            <label class="form-check-label" for="endgame-none">None</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" id="endgame-climb1" name="endgame" value="1">
+                                            <label class="form-check-label" for="endgame-climb1">L1 Climb</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" id="endgame-climb2" name="endgame" value="2">
+                                            <label class="form-check-label" for="endgame-climb2">L2 Climb</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" id="endgame-climb3" name="endgame" value="3">
+                                            <label class="form-check-label" for="endgame-deep">L3 Climb</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm">
+                                        <label class="form-label">Shooting Cycles</label>
+                                        <table style="width: 100%;">
+                                            <tbody>
+                                                <tr>
+                                                    <td id="teleTimer" style="text-align: center; font-size: 3.5rem;">0.0</td>
+                                                    <td style="text-align: right; width: 20%;">
+                                                        <a id="teleTimerBtn" class="btn btn-big btn-success p-5 float-end"><i class="fa fa-play fa-fw"></i></a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <table style="clear: right; width: 100%;">
+                                            <thead>
+                                                <tr>
+                                                    <th>Time<br><small>(sec)</small></th>
+                                                    <th>Fuel scored</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="teleSessionsList">
+                                                <!-- Tele sessions will be added here -->
+                                            </tbody>
+                                        </table>
+                                        <input type="hidden" id="teleSessionsData" name="teleSessionsData" value="[]">
+                                        <input type="hidden" id="teleCompositeScore" name="teleCompositeScore" value="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div><!-- /.row -->
+                </div><!-- /.tab-content -->
+
 
                 <div class="row">
                     <div class="col-md-8">
@@ -259,7 +384,7 @@ if ( isset($_GET["event"]) ) {
 
             // sets the initial ratio of the canvas
             canvas.width = 500;
-            canvas.height = 426;
+            canvas.height = 318;
 
             canvas.addEventListener('click', (event) => {
                 const rect = canvas.getBoundingClientRect();
@@ -347,6 +472,10 @@ if ( isset($_GET["event"]) ) {
                 coordinates.length = 0;
                 const prevPoint = '';
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Reset timer systems
+                resetTimerSystem('auto');
+                resetTimerSystem('tele');
             });
 
             form.addEventListener('submit', (event) => {
@@ -431,6 +560,237 @@ if ( isset($_GET["event"]) ) {
 
             function setBlank(ctl) {
                 ctl.val('')
+            }
+
+            // ============================================
+            // TIMER SYSTEM FOR AUTO AND TELE
+            // ============================================
+            
+            const timerSystems = {
+                auto: {
+                    timerInterval: null,
+                    elapsedTime: 0,
+                    isRunning: false,
+                    sessionCounter: 0
+                },
+                tele: {
+                    timerInterval: null,
+                    elapsedTime: 0,
+                    isRunning: false,
+                    sessionCounter: 0
+                }
+            };
+
+            // Start/Stop Timer for Auto
+            $('#autoTimerBtn').click(function() {
+                handleTimerClick('auto', this);
+            });
+
+            // Start/Stop Timer for Tele
+            $('#teleTimerBtn').click(function() {
+                handleTimerClick('tele', this);
+            });
+
+            function handleTimerClick(prefix, button) {
+                const icon = $('i', button);
+                const system = timerSystems[prefix];
+                
+                if (!system.isRunning) {
+                    // Start timer
+                    startTimer(prefix);
+                    icon.removeClass('fa-play').addClass('fa-stop');
+                    $(button).removeClass('btn-success').addClass('btn-danger');
+                    system.isRunning = true;
+                } else {
+                    // Stop timer
+                    stopTimer(prefix);
+                    icon.removeClass('fa-stop').addClass('fa-play');
+                    $(button).removeClass('btn-danger').addClass('btn-success');
+                    system.isRunning = false;
+                }
+            }
+
+            function startTimer(prefix) {
+                const system = timerSystems[prefix];
+                system.elapsedTime = 0;
+                system.timerInterval = setInterval(function() {
+                    system.elapsedTime += 0.1;
+                    $('#' + prefix + 'Timer').text(system.elapsedTime.toFixed(1));
+                }, 100);
+            }
+
+            function stopTimer(prefix) {
+                const system = timerSystems[prefix];
+                clearInterval(system.timerInterval);
+                const finalTime = parseFloat(system.elapsedTime.toFixed(1));
+                addSession(prefix, finalTime);
+            }
+
+            function addSession(prefix, time) {
+                const system = timerSystems[prefix];
+                system.sessionCounter++;
+                const sessionId = (prefix === 'auto' ? 'a' : 't') + 'Sess' + system.sessionCounter;
+                
+                // Create table row
+                const row = $('<tr>').attr('data-session-id', sessionId).css('border', '1px solid #999');
+                
+                // Time cell
+                const timeCell = $('<td>').css('width', '10%').text(time);
+                
+                // Radio buttons cell
+                const radioCell = $('<td>');
+                const amounts = [
+                    { value: 'full', label: 'Full load' },
+                    { value: 'half', label: 'Half' },
+                    { value: 'some', label: 'Some' },
+                    { value: 'none', label: 'None' }
+                ];
+                
+                amounts.forEach(function(amt) {
+                    const div = $('<div>').addClass('form-check form-check-inline');
+                    const input = $('<input>')
+                        .addClass('form-check-input')
+                        .attr('type', 'radio')
+                        .attr('name', sessionId)
+                        .attr('value', amt.value)
+                        .attr('data-session-id', sessionId)
+                        .attr('data-prefix', prefix);
+                    
+                    if (amt.value === 'full') {
+                        input.prop('checked', true);
+                    }
+                    
+                    const label = $('<label>').addClass('form-check-label').text(amt.label);
+                    div.append(input).append(label);
+                    radioCell.append(div);
+                });
+                
+                // Delete session cell
+                const deleteCell = $('<td>').css({'text-align': 'right', 'width': '10%'});
+                const deleteBtn = $('<a>')
+                    .addClass('btn btn-danger')
+                    .attr('data-session-id', sessionId)
+                    .attr('data-prefix', prefix)
+                    .html('<i class="fa fa-trash"></i>');
+                deleteCell.append(deleteBtn);
+                
+                row.append(timeCell).append(radioCell).append(deleteCell);
+                $('#' + prefix + 'SessionsList').append(row);
+                
+                // Add to sessions data
+                updateSessionsData(prefix, sessionId, time, 'full');
+                
+                // Attach event handlers
+                $('input[name="' + sessionId + '"]').change(function() {
+                    const amount = $(this).val();
+                    const sessionId = $(this).attr('data-session-id');
+                    const prefix = $(this).attr('data-prefix');
+                    updateSessionAmount(prefix, sessionId, amount);
+                });
+                
+                deleteBtn.click(function() {
+                    const sessionId = $(this).attr('data-session-id');
+                    const prefix = $(this).attr('data-prefix');
+                    deleteSession(prefix, sessionId);
+                });
+            }
+
+            function updateSessionsData(prefix, sessionId, time, amount) {
+                let sessions = JSON.parse($('#' + prefix + 'SessionsData').val());
+                const score = calculateScore(time, amount);
+                
+                // Use minimized identifiers: t=time, a=amount, s=score
+                sessions.push({
+                    id: sessionId,
+                    t: time,
+                    a: amount,
+                    s: score
+                });
+                
+                $('#' + prefix + 'SessionsData').val(JSON.stringify(sessions));
+                updateCompositeScore(prefix);
+            }
+
+            function updateSessionAmount(prefix, sessionId, amount) {
+                let sessions = JSON.parse($('#' + prefix + 'SessionsData').val());
+                const session = sessions.find(s => s.id === sessionId);
+                
+                if (session) {
+                    session.a = amount;
+                    session.s = calculateScore(session.t, amount);
+                    $('#' + prefix + 'SessionsData').val(JSON.stringify(sessions));
+                    updateCompositeScore(prefix);
+                }
+            }
+
+            function deleteSession(prefix, sessionId) {
+                // Remove from DOM
+                $('tr[data-session-id="' + sessionId + '"]').remove();
+                
+                // Remove from sessions data
+                let sessions = JSON.parse($('#' + prefix + 'SessionsData').val());
+                sessions = sessions.filter(s => s.id !== sessionId);
+                $('#' + prefix + 'SessionsData').val(JSON.stringify(sessions));
+                
+                updateCompositeScore(prefix);
+            }
+
+            function calculateScore(time, amount) {
+                if (amount === 'none') {
+                    return 0;
+                }
+                
+                // Base scores for each amount
+                const baseScores = {
+                    'full': 100,
+                    'half': 50,
+                    'some': 25,
+                    'none': 0
+                };
+                
+                const baseScore = baseScores[amount];
+                
+                // Apply time penalty - shorter times get higher scores
+                // Formula: score = baseScore * (10 / (time + 1))
+                const score = baseScore * (10 / (time + 1));
+                
+                return parseFloat(score.toFixed(2));
+            }
+
+            function updateCompositeScore(prefix) {
+                const sessions = JSON.parse($('#' + prefix + 'SessionsData').val());
+                const composite = sessions.reduce((sum, session) => sum + session.s, 0);
+                
+                $('#' + prefix + 'CompositeScore').val(composite.toFixed(2));
+            }
+
+            function resetTimerSystem(prefix) {
+                const system = timerSystems[prefix];
+                
+                // Stop timer if running
+                if (system.isRunning) {
+                    clearInterval(system.timerInterval);
+                    system.isRunning = false;
+                }
+                
+                // Reset timer display
+                $('#' + prefix + 'Timer').text('0.0');
+                
+                // Reset button appearance
+                const btn = $('#' + prefix + 'TimerBtn');
+                $('i', btn).removeClass('fa-stop').addClass('fa-play');
+                btn.removeClass('btn-danger').addClass('btn-success');
+                
+                // Clear sessions table
+                $('#' + prefix + 'SessionsList').empty();
+                
+                // Reset hidden inputs
+                $('#' + prefix + 'SessionsData').val('[]');
+                $('#' + prefix + 'CompositeScore').val('0');
+                
+                // Reset system state
+                system.elapsedTime = 0;
+                system.sessionCounter = 0;
             }
 
 
