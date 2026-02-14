@@ -103,24 +103,26 @@ $dataPointInsertText = $db->prepare("INSERT INTO submissionData(`submissionId`,`
                             foreach ($_REQUEST as $key => $val) {
                                 // echo ($key . "=" . $val . "<br>");
                                 if ($key != "event" && $key != "match" && $key != "teamNumber") {
-                                    echo("<input type=\"hidden\" name=\"$key\" value=\"$val\" />");
+                                    $safeKey = htmlspecialchars($key, ENT_QUOTES);
+                                    $safeVal = htmlspecialchars($val, ENT_QUOTES);
+                                    echo('<input type="hidden" name="' . $safeKey . '" value="' . $safeVal . '" />');
                                 }
                             }
                         ?>
                         <div class="row">
                             <div class="col-md">
                                 <label for="event" class="form-label">Event Code</label>
-                                <input type="text" class="form-control" id="event" name="event" value="<?php echo $_REQUEST["event"]; ?>" required>                
+                                <input type="text" class="form-control" id="event" name="event" value="<?php echo htmlspecialchars($_REQUEST["event"], ENT_QUOTES); ?>" required>                
                             </div>
 
                             <div class="col-md">
                                 <label for="teamNumber" class="form-label">Team Number</label>
-                                <input type="text" class="form-control" id="teamNumber" name="teamNumber" value="<?php echo $_REQUEST["teamNumber"]; ?>" required>                
+                                <input type="text" class="form-control" id="teamNumber" name="teamNumber" value="<?php echo htmlspecialchars($_REQUEST["teamNumber"], ENT_QUOTES); ?>" required>                
                             </div>
                         
                             <div class="col-md">
                                 <label for="match" class="form-label">Match</label>
-                                <input type="number" class="form-control" id="match" name="match" min="1" value="<?php echo $_REQUEST["match"]; ?>" required>
+                                <input type="number" class="form-control" id="match" name="match" min="1" value="<?php echo htmlspecialchars($_REQUEST["match"], ENT_QUOTES); ?>" required>
                             </div>
 
 

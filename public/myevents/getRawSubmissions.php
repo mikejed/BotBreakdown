@@ -58,17 +58,16 @@ if (isset($_GET['event'])) {
     $submissionGetResult = $submissionGet->get_result();
     $submissionGetResultData = $submissionGetResult->fetch_all(MYSQLI_ASSOC);
 
-    echo(array2csv($submissionGetResultData));
-}
-
-function array2csv($data, $delimiter = ',', $enclosure = '"', $escape_char = "\\") // https://stackoverflow.com/a/53882337
-{
-    $f = fopen('php://memory', 'r+');
-    foreach ($data as $item) {
-        fputcsv($f, $item, $delimiter, $enclosure, $escape_char);
+    // Write CSV rows, matching header format: enclose every field and double internal quotes
+    foreach ($submissionGetResultData as $row) {
+        $outRow = [];
+        foreach ($row as $value) {
+            // Escape quotes by doubling them, then enclose field
+            $value = str_replace('"', '""', $value);
+            $outRow[] = '"' . $value . '"';
+        }
+        echo implode(',', $outRow) . "\r\n";
     }
-    rewind($f);
-    return stream_get_contents($f);
 }
 
 ?>

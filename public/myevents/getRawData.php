@@ -170,10 +170,15 @@ if (isset($_GET['event'])) {
 
             // Can we get back to just showing the data please?
             unset($row["teamMatchId"]);
-            // $row["allianceResults"] = str_replace('"', '""', $row["allianceResults"]);
 
-            $row = str_replace("\"", "\"\"", $row);
-            echo ("\"" . implode('","', $row) . "\"\n");
+            // Write row with proper RFC4180 CSV escaping: double quotes and enclose all fields
+            $outRow = [];
+            foreach ($row as $value) {
+                // Escape quotes by doubling them, then enclose field
+                $value = str_replace('"', '""', (string)$value);
+                $outRow[] = '"' . $value . '"';
+            }
+            echo implode(',', $outRow) . "\r\n";
         }
     }
 }

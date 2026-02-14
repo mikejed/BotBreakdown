@@ -53,7 +53,7 @@ include './_head.php';
             <div class="col-sm-7 d-flex flex-column justify-content-center checkerboard-text">
                 <h3>Easy data entry</h3>
                 <p>No wondering what icons mean- data entry on botbreakdown.com is clear and easy to use</p>
-                <p>And new to the 2025 release: a visual way of recording where a robot drives during the autonomous period!</p>
+                <p>And for several seasons now we've had a visual way of capturing paths during the autonomous period, with the ability to overlay all of a team's autonomous paths across matches and scouters in a single view.</p>
             </div>
             <div class="col-sm-5 d-flex flex-column justify-content-center">
                 <img src="/assets/images/right-frame.png" id="sample2" class="img-fluid" alt="Autonomous data entry tab">
@@ -71,7 +71,7 @@ include './_head.php';
 
         <div class="alert alert-info mt-4">
             <h4>Latest Update</h4>
-            <p>The season and schedules have been updated for the 2026 season - we're looking forward to the kickoff and seeing what the game is this year! The scoring and boards will be updated as soon as we can once it's revealed.</p>
+            <p>We are ready to go for the 2026 season! The events and teams are loading, the form is updated, and we're excited to let you get your hands on the new timed "shooting sessions" data capture method. Let's go 'bots!</p>
         </div>
         
     </div>

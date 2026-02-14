@@ -40,6 +40,10 @@ if ( isset($_GET["event"]) ) {
             --bs-btn-padding-y: 0rem;
             --bs-btn-padding-x: 0rem;
         }
+        /* Ensure tele shooting column has enough initial width to avoid layout jump */
+        #teleShootingCol {
+            min-width: 320px;
+        }
         input.input-lg  {
             padding: 0rem;
             padding-left: 1rem;
@@ -61,7 +65,7 @@ if ( isset($_GET["event"]) ) {
                 <a class="btn btn-outline-secondary float-end" title="Review my submissions" href="javascript:viewHistory();"><i class="fa-solid fa-clock-rotate-left"></i></a>
                 <h1><?php echo $eventName; ?></h1>
             </div></div>
-            <div class="row">
+            <div class="row align-items-end">
 
                 <div class="col-md">
                     <label for="teamNumber" class="form-label">Team Number</label>
@@ -91,7 +95,7 @@ if ( isset($_GET["event"]) ) {
                         echo("<option value=\"$team->teamNumber\">$team->teamNumber - $team->nameShort</option>");
                     }
                     echo "</select>";
-                    echo "<input type=\"hidden\" name=\"event\" value=\"" . $_GET["event"] . "\" />";
+                    echo "<input type=\"hidden\" name=\"event\" value=\"" . htmlspecialchars($_GET["event"], ENT_QUOTES) . "\" />";
                     } else {
 ?>
                         <input type="number" class="form-control" id="teamNumber" name="teamNumber" min="1" required>
@@ -191,11 +195,14 @@ if ( isset($_GET["event"]) ) {
                                             </tr>
                                         </tbody>
                                     </table>
-                                    <table style="clear: right; width: 100%;">
+                                    <table style="clear: right; width: 100%;" class="mt-4">
                                         <thead>
                                             <tr>
-                                                <th>Time<br><small>(sec)</small></th>
-                                                <th>Fuel scored</th>
+                                                <th colspan="3" class="text-center"><h5>Sessions <small>(newest to oldest)</small></h5></th>
+                                            </tr>
+                                            <tr>
+                                                <th>Seconds</th>
+                                                <th style="text-align: center;">Fuel scored</th>
                                                 <th></th>
                                             </tr>
                                         </thead>
@@ -261,7 +268,7 @@ if ( isset($_GET["event"]) ) {
                                             <label class="form-check-label" for="endgame-deep">L3 Climb</label>
                                         </div>
                                     </div>
-                                    <div class="col-sm">
+                                    <div id="teleShootingCol" class="col-sm">
                                         <label class="form-label">Shooting Cycles</label>
                                         <table style="width: 100%;">
                                             <tbody>
@@ -273,11 +280,15 @@ if ( isset($_GET["event"]) ) {
                                                 </tr>
                                             </tbody>
                                         </table>
-                                        <table style="clear: right; width: 100%;">
+                                        <table style="clear: right; width: 100%;" class="mt-4">
+                                            <thead>
+                                                <tr>
+                                                    <th colspan="3" class="text-center"><h5>Sessions <small>(newest to oldest)</small></h5></th>
+                                                </tr>
                                             <thead>
                                                 <tr>
                                                     <th>Time<br><small>(sec)</small></th>
-                                                    <th>Fuel scored</th>
+                                                    <th class="text-center">Fuel scored</th>
                                                     <th></th>
                                                 </tr>
                                             </thead>
@@ -495,12 +506,16 @@ if ( isset($_GET["event"]) ) {
                 // Store the value of the #tag input in a cookie
                 setCookie("tag", document.getElementById('tag').value, 30);
                 
-                // Now validate the form
-                $('body').addClass('was-validated');
-                if (
-                    $('#teamNumber:valid').length > 0
-                    && $('#match:valid').length > 0
-                ){
+                    // Now validate the form
+                    $('body').addClass('was-validated');
+                    // Ensure required fields and any session numeric inputs are valid
+                    const sessionsPresent = $('.session-input').length > 0;
+                    const invalidSessions = $('.session-input:invalid').length;
+                    if (
+                        $('#teamNumber:valid').length > 0
+                        && $('#match:valid').length > 0
+                        && (!sessionsPresent || invalidSessions === 0)
+                    ){
                     
                     $('#submitError').hide();
                     // Store the URL in localStorage. Set/get the nextIndex
@@ -635,57 +650,95 @@ if ( isset($_GET["event"]) ) {
                 const row = $('<tr>').attr('data-session-id', sessionId).css('border', '1px solid #999');
                 
                 // Time cell
-                const timeCell = $('<td>').css('width', '10%').text(time);
+                const timeCell = $('<td>').css({'width': '8%', 'vertical-align': 'top', 'padding': '0.5rem'}).text(time);
                 
-                // Radio buttons cell
-                const radioCell = $('<td>');
-                const amounts = [
-                    { value: 'full', label: 'Full load' },
-                    { value: 'half', label: 'Half' },
-                    { value: 'some', label: 'Some' },
-                    { value: 'none', label: 'None' }
+                // Main content cell (takes up most space)
+                const contentCell = $('<td>').css('padding', '0.5rem');
+                
+                // Input section
+                const inputSection = $('<div>').css('margin-bottom', '0.75rem');
+                const inputLabel = $('<label>').addClass('form-label').css({display: 'inline', 'margin-right': '0.5rem'}).text('Approx. count:');
+                const numericInput = $('<input>')
+                    .attr('type', 'number')
+                    .attr('min', '0')
+                    .attr('required', 'required')
+                    .addClass('form-control form-control-sm session-input')
+                    .attr('placeholder', 'Enter count')
+                    .attr('data-session-id', sessionId)
+                    .attr('data-prefix', prefix)
+                    .css({'width': '150px', 'display': 'inline-block'});
+                
+                inputSection.append(inputLabel).append(numericInput);
+                
+                // Buttons section
+                const buttonsSection = $('<div>');
+                const buttonLabel = $('<label>').addClass('form-label').css({'font-size': '0.9rem', 'margin-bottom': '0.25rem', 'display': 'block'}).text('Quick Fill Shortcuts:');
+                const buttonContainer = $('<div>').css({'display': 'flex', 'flex-wrap': 'wrap', 'gap': '0.5rem'});
+                // Group label + buttons so they can be removed together when a number is entered
+                const quickGroup = $('<div>').addClass('quick-fill-group').attr('data-session-id', sessionId);
+                
+                const quickFills = [
+                    { value: 0, label: 'None ~0' },
+                    { value: 5, label: 'Few ~5' },
+                    { value: 10, label: 'Some ~10' },
+                    { value: 20, label: 'Many ~20' },
+                    { value: 50, label: 'Tons ~50' }
                 ];
                 
-                amounts.forEach(function(amt) {
-                    const div = $('<div>').addClass('form-check form-check-inline');
-                    const input = $('<input>')
-                        .addClass('form-check-input')
-                        .attr('type', 'radio')
-                        .attr('name', sessionId)
-                        .attr('value', amt.value)
+                quickFills.forEach(function(btn) {
+                    const quickBtn = $('<button>')
+                        .attr('type', 'button')
+                        .addClass('btn btn-sm btn-danger')
+                        .css({'flex': '1 1 18%', 'min-width': '70px'})
+                        .text(btn.label)
                         .attr('data-session-id', sessionId)
-                        .attr('data-prefix', prefix);
+                        .attr('data-prefix', prefix)
+                        .attr('data-value', btn.value);
                     
-                    if (amt.value === 'full') {
-                        input.prop('checked', true);
-                    }
+                    quickBtn.click(function(e) {
+                        e.preventDefault();
+                        $('input[data-session-id="' + sessionId + '"][type="number"]').val(btn.value).trigger('change');
+                    });
                     
-                    const label = $('<label>').addClass('form-check-label').text(amt.label);
-                    div.append(input).append(label);
-                    radioCell.append(div);
+                    buttonContainer.append(quickBtn);
                 });
                 
-                // Delete session cell
-                const deleteCell = $('<td>').css({'text-align': 'right', 'width': '10%'});
+                quickGroup.append(buttonLabel).append(buttonContainer);
+                buttonsSection.append(quickGroup);
+                
+                contentCell.append(inputSection).append(buttonsSection);
+                
+                // Delete button cell
+                const deleteCell = $('<td>').css({'width': '5%', 'text-align': 'right', 'vertical-align': 'top', 'padding': '0.5rem'});
                 const deleteBtn = $('<a>')
-                    .addClass('btn btn-danger')
+                    .addClass('btn btn-sm btn-danger')
                     .attr('data-session-id', sessionId)
                     .attr('data-prefix', prefix)
                     .html('<i class="fa fa-trash"></i>');
                 deleteCell.append(deleteBtn);
                 
-                row.append(timeCell).append(radioCell).append(deleteCell);
-                $('#' + prefix + 'SessionsList').append(row);
+                row.append(timeCell).append(contentCell).append(deleteCell);
+                $('#' + prefix + 'SessionsList').prepend(row);
                 
-                // Add to sessions data
-                updateSessionsData(prefix, sessionId, time, 'full');
+                // Add to sessions data with no default value (0)
+                updateSessionsData(prefix, sessionId, time, 0);
                 
-                // Attach event handlers
-                $('input[name="' + sessionId + '"]').change(function() {
-                    const amount = $(this).val();
+                numericInput.change(function() {
+                    const amount = parseInt($(this).val());
                     const sessionId = $(this).attr('data-session-id');
                     const prefix = $(this).attr('data-prefix');
-                    updateSessionAmount(prefix, sessionId, amount);
+
+                    if (!isNaN(amount)) {
+                        // Remove quick-fill label+buttons entirely for this session once a number is provided
+                        try {
+                            quickGroup.remove();
+                        } catch (e) {
+                            // fallback: remove any buttons and any label group by session id
+                            $('div.quick-fill-group[data-session-id="' + sessionId + '"]').remove();
+                            $('button[data-session-id="' + sessionId + '"]').remove();
+                        }
+                        updateSessionAmount(prefix, sessionId, amount);
+                    }
                 });
                 
                 deleteBtn.click(function() {
@@ -700,6 +753,7 @@ if ( isset($_GET["event"]) ) {
                 const score = calculateScore(time, amount);
                 
                 // Use minimized identifiers: t=time, a=amount, s=score
+                // Store sessions oldest-to-newest in JSON (UI presents newest-first)
                 sessions.push({
                     id: sessionId,
                     t: time,
@@ -736,23 +790,17 @@ if ( isset($_GET["event"]) ) {
             }
 
             function calculateScore(time, amount) {
-                if (amount === 'none') {
+                // amount is now a numeric value representing item count
+                const numAmount = parseInt(amount) || 0;
+                
+                if (numAmount === 0) {
                     return 0;
                 }
                 
-                // Base scores for each amount
-                const baseScores = {
-                    'full': 100,
-                    'half': 50,
-                    'some': 25,
-                    'none': 0
-                };
-                
-                const baseScore = baseScores[amount];
-                
-                // Apply time penalty - shorter times get higher scores
-                // Formula: score = baseScore * (10 / (time + 1))
-                const score = baseScore * (10 / (time + 1));
+                // Composite score: amount * time efficiency factor
+                // Formula: score = amount * (10 / (time + 1))
+                // This rewards both higher counts and faster completion times
+                const score = numAmount * (10 / (time + 1));
                 
                 return parseFloat(score.toFixed(2));
             }
