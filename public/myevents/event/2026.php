@@ -682,6 +682,7 @@ if ( isset($_GET["event"]) ) {
                     { value: 5, label: 'Few ~5' },
                     { value: 10, label: 'Some ~10' },
                     { value: 20, label: 'Many ~20' },
+                    { value: 30, label: 'Lots ~30' },
                     { value: 50, label: 'Tons ~50' }
                 ];
                 

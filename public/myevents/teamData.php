@@ -106,7 +106,7 @@ $teamAutoMapGet = $db->prepare("SELECT
     <hr class="my-5">
     <div class="row">
         <div class="col-sm">
-            <svg width="500" height="426" xmlns="http://www.w3.org/2000/svg" style="background-image: url('/assets/images/2025/blue-court-500.png'); background-size: cover;">
+            <svg width="500" height="318" xmlns="http://www.w3.org/2000/svg" style="background-image: url('/assets/images/<?php echo $currentSeason; ?>/blue-court-500.png'); background-size: cover;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 85" width="500" height="426">
                     <rect x="0" width="105" height="85" style="fill:none;stroke:#999;stroke-width:1"></rect>
                     <?php
@@ -124,7 +124,7 @@ $teamAutoMapGet = $db->prepare("SELECT
             </svg>
         </div>
         <div class="col-sm text-end">
-            <svg width="500" height="426" xmlns="http://www.w3.org/2000/svg" style="background-image: url('/assets/images/2025/red-court-500.png'); background-size: cover;">
+            <svg width="500" height="318" xmlns="http://www.w3.org/2000/svg" style="background-image: url('/assets/images/<?php echo $currentSeason; ?>/red-court-500.png'); background-size: cover;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 85" width="500" height="426">
                     <rect x="0" width="105" height="85" style="fill:none;stroke:#999;stroke-width:1"></rect>
                     <?php
