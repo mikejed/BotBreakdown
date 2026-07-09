@@ -47,7 +47,7 @@ if ( isset($_GET["event"]) ) {
         $i_pages = json_decode($content)->pageTotal;
         for ($i=2; $i<=$i_pages; $i++) {
             $eventRequest = curl_init("https://frc-api.firstinspires.org/v3.0/$currentSeason/teams?eventCode=" . $firstEventCode . "&page=" . $i);
-            curl_setopt_array($eventRequest, $curlOpt);
+            curl_setopt_array($eventRequest, $firstCurlOpt);
             $content = curl_exec($eventRequest);
             $a_Teams = array_merge($a_Teams, json_decode($content)->teams);
         }
