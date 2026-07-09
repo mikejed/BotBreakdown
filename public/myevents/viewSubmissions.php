@@ -33,20 +33,20 @@ if(strlen($eventName) < 1) {
 }
 
 echo("<div class=\"container mb-3\">
-        <h1>Submissions for " . $eventName . "</h1>
-        <a href=\"viewData.php?event=" . $_GET["event"] . "\" class=\"btn btn-outline-secondary\"><i class=\"fa-solid fa-left-long\"></i> Back to event</a>
+        <h1>Submissions for " . e($eventName) . "</h1>
+        <a href=\"viewData.php?event=" . rawurlencode($_GET["event"]) . "\" class=\"btn btn-outline-secondary\"><i class=\"fa-solid fa-left-long\"></i> Back to event</a>
         <hr>
     ");
 
 if (isset($_GET['event'])) {
     if (isset($_GET["allData"]) && $_GET["allData"] == "true") {
         $showAllData = "";
-        echo("<a href=\"" . str_replace("&allData=true", "", $_SERVER['REQUEST_URI']) . "\" class=\"btn btn-outline-warning\">Show condensed table</a>");
+        echo("<a href=\"" . e(str_replace("&allData=true", "", $_SERVER['REQUEST_URI'])) . "\" class=\"btn btn-outline-warning\">Show condensed table</a>");
     } else {
         $showAllData = "AND dp.`dataSet` = 'minimum'";
-        echo("<a href=\"" . $_SERVER['REQUEST_URI'] . "&allData=true\" class=\"btn btn-outline-warning\">Show all fields</a>");
+        echo("<a href=\"" . e($_SERVER['REQUEST_URI']) . "&allData=true\" class=\"btn btn-outline-warning\">Show all fields</a>");
     }
-    echo("<a href=\"getRawSubmissions.php?event=" . $_GET["event"] . "\" class=\"float-end btn btn-primary\"><i class=\"fa-solid fa-file-csv\"></i> Export Submissions</a>
+    echo("<a href=\"getRawSubmissions.php?event=" . rawurlencode($_GET["event"]) . "\" class=\"float-end btn btn-primary\"><i class=\"fa-solid fa-file-csv\"></i> Export Submissions</a>
         </div>");
 
     $dataPointGet = $db->prepare("SELECT dp.`id`, dp.`name`, dp.`dataType`, dp.`dataSet` FROM `dataPoint` dp WHERE `season` = ? $showAllData");
@@ -66,7 +66,7 @@ if (isset($_GET['event'])) {
                 $dataPointColumns .= ", ";
                 $joinColumns .= "\n";
             }
-            echo ("<th>" . $dataItem["name"] . "</th>");
+            echo ("<th>" . e($dataItem["name"]) . "</th>");
             if ($dataItem["dataType"] == "text") {
                 $dataPointColumns .= "data" . $dataItem["id"] . ".`dataText` AS `" . $dataItem["name"] . "`\n";
             } else {
@@ -191,7 +191,8 @@ if (isset($_GET['event'])) {
             unset($row["submissionId"]);
             unset($row["scouterId"]);
             unset($row["previouslyFlagged"]);
-            echo ("<tr><td>" . implode("</td><td>", $row) . "</td><td>");
+            $safeCells = array_map(function($value) { return nl2br(e($value)); }, $row);
+            echo ("<tr><td>" . implode("</td><td>", $safeCells) . "</td><td>");
             
             
             if ($scouterId == $currentPersonId) {

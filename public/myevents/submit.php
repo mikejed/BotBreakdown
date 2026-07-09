@@ -173,10 +173,10 @@ $dataPointInsertText = $db->prepare("INSERT INTO submissionData(`submissionId`,`
                     ?>
                     <div class="row">
                         <div class="col-md">
-                            <a class="btn btn-outline-primary" href="viewData.php?event=<?php echo $_REQUEST["event"]; ?>"><i class="fa-solid fa-left-long"></i> View Event</a>
+                            <a class="btn btn-outline-primary" href="viewData.php?event=<?php echo rawurlencode($_REQUEST["event"]); ?>"><i class="fa-solid fa-left-long"></i> View Event</a>
                         </div>
                         <div class="col-md text-end">
-                            <a class="btn btn-primary" href="event/<?php echo $_REQUEST["event"]; ?>">Enter another match</a>
+                            <a class="btn btn-primary" href="event/<?php echo rawurlencode($_REQUEST["event"]); ?>">Enter another match</a>
                         </div>
                     </div>
                     <?php
@@ -219,7 +219,7 @@ $dataPointInsertText = $db->prepare("INSERT INTO submissionData(`submissionId`,`
                                         $dataPointInsertNumerical->bind_param("iii", $_submissionId, $field["id"], $_REQUEST[$field["dataKey"]]);
                                         $dataPointInsertNumerical->execute();
                                     }
-                                    echo("<li><strong>" . $field["name"] . ":</strong> " . $_REQUEST[$field["dataKey"]] . "</li>\n");
+                                    echo("<li><strong>" . e($field["name"]) . ":</strong> " . e($_REQUEST[$field["dataKey"]]) . "</li>\n");
                                 } else {
                                     $noValue = 'No'; // $field["blankValue"];
                                     $noInt = 0;
@@ -228,12 +228,12 @@ $dataPointInsertText = $db->prepare("INSERT INTO submissionData(`submissionId`,`
                                         if (!empty($noValue)) {
                                             $dataPointInsertText->bind_param("iis", $_submissionId, $field["id"], $noValue);
                                             $dataPointInsertText->execute();
-                                            echo("<li><strong>" . $field["name"] . ":</strong> " . $noValue . "</li>\n");
+                                            echo("<li><strong>" . e($field["name"]) . ":</strong> " . e($noValue) . "</li>\n");
                                         }
                                     } else {
                                         $dataPointInsertNumerical->bind_param("iii", $_submissionId, $field["id"], $noInt);
                                         $dataPointInsertNumerical->execute();
-                                        echo("<li><strong>" . $field["name"] . ":</strong> " . $noInt . "</li>\n");
+                                        echo("<li><strong>" . e($field["name"]) . ":</strong> " . $noInt . "</li>\n");
                                     }
                                 }
                             }
@@ -255,11 +255,11 @@ $dataPointInsertText = $db->prepare("INSERT INTO submissionData(`submissionId`,`
                                 $dataPointInsertNumerical->bind_param("iii", $_submissionId, $field["id"], $_REQUEST[$field["dataKey"]]);
                                 $dataPointInsertNumerical->execute();
                             }
-                            echo("<li><strong>" . $field["name"] . ":</strong> " . $_REQUEST[$field["dataKey"]] . "</li>\n");
+                            echo("<li><strong>" . e($field["name"]) . ":</strong> " . e($_REQUEST[$field["dataKey"]]) . "</li>\n");
                         } elseif ($field["dataKey"] == "submitterId") {
                             $dataPointInsertText->bind_param("iis", $_submissionId, $field["id"], $currentPersonId);
                             $dataPointInsertText->execute();
-                            echo("<li><strong>" . $field["name"] . ":</strong> " . $currentPersonId . "</li>\n");
+                            echo("<li><strong>" . e($field["name"]) . ":</strong> " . $currentPersonId . "</li>\n");
                         }
                     }
 

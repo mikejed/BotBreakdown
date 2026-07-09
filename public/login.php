@@ -164,7 +164,7 @@ echo ('<div class="container">');
                             Confirmation Code
                         </div>
                         <div class="card-body">
-                            <form id="confirmationForm" method="post" action="/login.php<?php if ($_SERVER['QUERY_STRING'] != '') { echo('?' . $_SERVER['QUERY_STRING']); } ?>">
+                            <form id="confirmationForm" method="post" action="/login.php<?php if ($_SERVER['QUERY_STRING'] != '') { echo('?' . e($_SERVER['QUERY_STRING'])); } ?>">
                                 <input type="hidden" id="totp" name="totp" />
                                 <input type="hidden" name="email" value="<?php echo htmlspecialchars($_POST["email"], ENT_QUOTES); ?>" />
                                 <div class="form-group d-flex justify-content-center mb-4">
@@ -179,7 +179,7 @@ echo ('<div class="container">');
                             </form>
                             <hr>
                             <form id="resendForm" method="post" action="/login.php">
-                                <input type="hidden" id="email" name="email" value="<?php echo $_POST["email"]; ?>" />
+                                <input type="hidden" id="email" name="email" value="<?php echo e($_POST["email"]); ?>" />
                                 Missed the message? You can resend it here:<br>
                                 <input type="submit" value="Resend Code" />
                             </form>
@@ -241,7 +241,7 @@ echo ('<div class="container">');
                             <h3 class="card-title">Login</h3>
                         </div>
                         <div class="card-body">
-                            <form id="loginForm" method="post" action="/login.php<?php if ($_SERVER['QUERY_STRING'] != '') { echo('?' . $_SERVER['QUERY_STRING']); } ?>">
+                            <form id="loginForm" method="post" action="/login.php<?php if ($_SERVER['QUERY_STRING'] != '') { echo('?' . e($_SERVER['QUERY_STRING'])); } ?>">
                                 <label for="email" class="form-label">Email Address</label>
                                 <input type="email" id="email" name="email" class="form-control" placeholder="you@domain.com" required>
                                 <button class="btn btn-primary float-end mt-4">Submit</button>

@@ -64,7 +64,7 @@ $teamAutoMapGetResultData = $teamAutoMapGetResult->fetch_all(MYSQLI_ASSOC);
                 if ($path['flagCount'] >= $flagThreshold) {
                     $shown = 'display:none;';
                 }
-                echo('<path id="' . $path['id'] . '" d="M' . $path['map'] . '" style="fill:none;stroke:#000;stroke-width:1;' . $shown . '"></path>');
+                echo('<path id="' . $path['id'] . '" d="M' . e($path['map']) . '" style="fill:none;stroke:#000;stroke-width:1;' . $shown . '"></path>');
             }
         }
     ?>

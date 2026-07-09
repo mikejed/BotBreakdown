@@ -18,7 +18,7 @@ if ($currentPersonId > 0 && strlen($_GET["event"]) > 6) {
         $watchSubmissionDelete->bind_param("si", $_GET["event"], $currentPersonId);
         $watchSubmissionDelete->execute();
 
-        echo('<a class="btn btn-outline-secondary watch-toggle float-start" data-event="' . $_GET["event"] . '" title="Add this to events I\'m watching"><i class="fa-solid fa-eye"></i></a>');
+        echo('<a class="btn btn-outline-secondary watch-toggle float-start" data-event="' . e($_GET["event"]) . '" title="Add this to events I\'m watching"><i class="fa-solid fa-eye"></i></a>');
 
     } else {
         // Not watching the event already: create a teamMatch record and a submission for match 0 if it doesn't already exist.
@@ -38,7 +38,7 @@ if ($currentPersonId > 0 && strlen($_GET["event"]) > 6) {
         $newEventWatch->bind_param("si", $teamMatchData[0]["id"], $currentPersonId);
         $newEventWatch->execute();
 
-        echo('<a class="btn btn-outline-warning watch-toggle float-start" data-event="' . $_GET["event"] . '" title="Remove this event from my watch list' . $eventWatchData[0]["count"] . $currentPersonId . $_GET["event"] . '"><i class="fa-solid fa-eye"></i></a>');
+        echo('<a class="btn btn-outline-warning watch-toggle float-start" data-event="' . e($_GET["event"]) . '" title="Remove this event from my watch list"><i class="fa-solid fa-eye"></i></a>');
     }
 
 } else {

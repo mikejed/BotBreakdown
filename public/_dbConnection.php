@@ -16,6 +16,12 @@ if ($db->connect_error) {
     die("Connection failed: " . $db->connect_error);
 }
 
+// Escape a value for safe output inside HTML text or attributes. Use this on
+// anything that originated from a request or from scouter-entered data.
+function e($value) {
+    return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
+}
+
 // Create a function I can use on any page, to consistently log history.
 function logHistory($_operation, $_data, $_recordType=NULL, $_recordId=NULL) {
     global $db, $currentPersonId, $currentSessionId;

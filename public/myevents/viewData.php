@@ -97,8 +97,8 @@ $recentMatchData = $recentMatchResult->fetch_all(MYSQLI_ASSOC);
 // Charts and KPIs
 echo('
 <div class="container">
-    <span class="float-end mt-4"><a href="getEventTeamList.php?event=' . $_GET["event"] . '" title="For loading team lists into analytics">Team List</a></span>
-    <h1>' . $eventName . '</h1><hr>');
+    <span class="float-end mt-4"><a href="getEventTeamList.php?event=' . rawurlencode($_GET["event"]) . '" title="For loading team lists into analytics">Team List</a></span>
+    <h1>' . e($eventName) . '</h1><hr>');
 ?>
     <div class="row">
         <div class="col-md-4 mb-4">
@@ -161,7 +161,7 @@ echo("
 
 foreach ($matchScoresData as $match) {
     if ($match["blue"] > 0) {
-        echo ("{ x: '" . $match["match"] . "', y: " . $match["blue"] . "},");
+        echo ("{ x: '" . (int)$match["match"] . "', y: " . (int)$match["blue"] . "},");
     }
 }
 
@@ -173,7 +173,7 @@ echo("                    ]
 
 foreach ($matchScoresData as $match) {
     if ($match["blue"] > 0) {
-        echo ("{ x: '" . $match["match"] . "', y: " . $match["red"] . "},");
+        echo ("{ x: '" . (int)$match["match"] . "', y: " . (int)$match["red"] . "},");
     }
 }
 
@@ -212,7 +212,7 @@ echo("                    ]
                 label: 'Submissions per Match',
                 data: [");
 foreach ($matchSubmissionCountData as $match) {
-    echo ("{ x: '" . $match["match"] . "', y: " . $match["count"] . "},");
+    echo ("{ x: '" . (int)$match["match"] . "', y: " . (int)$match["count"] . "},");
 }
 echo("
                             ]
@@ -258,7 +258,7 @@ echo("
         $availableTeamsData = $availableTeamsResult->fetch_all(MYSQLI_ASSOC);
 
         foreach( $availableTeamsData as $team ) {
-            echo("<div class=\"col-4 col-lg-2 mb-1\"><a href=\"/myevents/teamData.php?event=" . $_GET['event'] . "&team=" . $team['teamNumber'] . "\" class=\"btn btn-outline-secondary\" style=\"width:100%;\">" . $team['teamNumber'] . "</a></div>");
+            echo("<div class=\"col-4 col-lg-2 mb-1\"><a href=\"/myevents/teamData.php?event=" . rawurlencode($_GET['event']) . "&team=" . rawurlencode($team['teamNumber']) . "\" class=\"btn btn-outline-secondary\" style=\"width:100%;\">" . e($team['teamNumber']) . "</a></div>");
         }
     ?>
 
@@ -271,21 +271,21 @@ echo("
 // Section: get the data from the database that we want to show in the table.
 if (isset($_GET['event'])) {
     echo("<div class=\"container\">
-            <a href=\"event/" . $_GET["event"] . "\" class=\"float-end btn btn-secondary\">Enter Data <i class=\"fa-solid fa-right-long\"></i></a>
+            <a href=\"event/" . rawurlencode($_GET["event"]) . "\" class=\"float-end btn btn-secondary\">Enter Data <i class=\"fa-solid fa-right-long\"></i></a>
             <h3>Averaged data</h3>
-            <small><a href=\"viewSubmissions.php?event=" . $_GET['event'] . "\">(Show actual event submissions)</a></small>
+            <small><a href=\"viewSubmissions.php?event=" . rawurlencode($_GET['event']) . "\">(Show actual event submissions)</a></small>
             <hr>
         </div>");
 
     echo("<div class=\"container\">
-            <a href=\"getRawData.php?event=" . $_GET["event"] . "\" class=\"float-end btn btn-primary\"><i class=\"fa-solid fa-file-csv\"></i> Download all data</a>
+            <a href=\"getRawData.php?event=" . rawurlencode($_GET["event"]) . "\" class=\"float-end btn btn-primary\"><i class=\"fa-solid fa-file-csv\"></i> Download all data</a>
     ");
     if (isset($_GET["allData"]) && $_GET["allData"] == "true") {
         $showAllData = "";
-        echo("<a href=\"" . str_replace("&allData=true", "", $_SERVER['REQUEST_URI']) . "\" class=\"btn btn-outline-warning\">Show condensed table</a>");
+        echo("<a href=\"" . e(str_replace("&allData=true", "", $_SERVER['REQUEST_URI'])) . "\" class=\"btn btn-outline-warning\">Show condensed table</a>");
     } else {
         $showAllData = "AND `dataSet` = 'minimum'";
-        echo("<a href=\"" . $_SERVER['REQUEST_URI'] . "&allData=true\" class=\"btn btn-outline-warning\">Show all fields</a>");
+        echo("<a href=\"" . e($_SERVER['REQUEST_URI']) . "&allData=true\" class=\"btn btn-outline-warning\">Show all fields</a>");
     }
     echo("</div>");
 
@@ -306,11 +306,12 @@ if (isset($_GET['event'])) {
                 $dataPointColumns .= ", ";
                 $joinColumns .= "\n";
             }
-            echo ("<th>" . $dataItem["name"] . "</th>");
+            echo ("<th>" . e($dataItem["name"]) . "</th>");
             if ($dataItem["dataType"] == "text") {
                 // There's no way to "average" text. Original decision: let "yes" values override "no" values. So get distinct text that's not equal to "no" and if there's nothing left THEN show "no". But see comment below- this wasn't desirable. Need to check and see how this handles multiple submissions now.
+                // Values are joined with newlines and converted to <br> AFTER escaping at output time, so scouter text can never carry markup.
                 $dataPointColumns .= "(
-                                        SELECT IFNULL( GROUP_CONCAT(DISTINCT sd.`dataText` SEPARATOR '<br>'), '') -- Note: this used to use 'No' as the IFNULL replace string. This caused 'no' to show up where blanks made more sense.
+                                        SELECT IFNULL( GROUP_CONCAT(DISTINCT sd.`dataText` SEPARATOR '\n'), '') -- Note: this used to use 'No' as the IFNULL replace string. This caused 'no' to show up where blanks made more sense.
                                         FROM
                                             `submissionData` sd
                                             INNER JOIN `dataPoint` dp ON sd.`dataPointId` = dp.`id`-- AND sd.`dataText` <> 'no'
@@ -415,7 +416,8 @@ if (isset($_GET['event'])) {
             $teamMatchId = $row["teamMatchId"];
             unset($row["teamMatchId"]);
             unset($row["allianceResults"]);
-            echo ("<tr><td>" . implode("</td><td>", $row) . "</td><td><a class=\"btn btn-info btn-sm\" href=\"viewSubmissions.php?event=" . $_GET['event'] . "&match=" . $row["match"] . "\">View Submissions</a></td></tr>");
+            $safeCells = array_map(function($value) { return nl2br(e($value)); }, $row);
+            echo ("<tr><td>" . implode("</td><td>", $safeCells) . "</td><td><a class=\"btn btn-info btn-sm\" href=\"viewSubmissions.php?event=" . rawurlencode($_GET['event']) . "&match=" . (int)$row["match"] . "\">View Submissions</a></td></tr>");
         }
 
         echo "</tbody></table></div></div>";

@@ -36,7 +36,7 @@ $recentFlagCount = $getRecentFlagCountResultData[0]["flags"];
                         }
                         ?>
                         <form method="post" action="flagSubmission.php">
-                            <input type="hidden" name="submissionId" value="<?php echo($_GET["submissionId"]); ?>">
+                            <input type="hidden" name="submissionId" value="<?php echo e($_GET["submissionId"]); ?>">
                             <label class="form-label">Review Reason</label>
                             <textarea name="reviewReason" class="form-control"></textarea>
                             <input type="submit" />
