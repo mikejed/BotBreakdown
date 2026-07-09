@@ -4,6 +4,8 @@ $pageTitle = "View " . $_GET["event"] . " Submissions";
 include '../_dbConnection.php';
 include '../_head.php';
 
+$firstEventCode = substr($_GET["event"],4);
+
 // Get the event name
 $eventName = "";
 $eventNameQuery = $db->prepare("SELECT `eventName` FROM `eventData` WHERE `event` = ?");
