@@ -61,8 +61,8 @@ $sessionResultData = $sessionResult->fetch_all(MYSQLI_ASSOC);
 
 // If a match isn't found, don't use the (blank or non-blank) session; ignore what was provided and create a NEW session.
 if ($sessionResult->num_rows == 0) {
-    // make the new Id
-    $currentSessionId = uniqid();
+    // make the new Id (cryptographically random; uniqid() is a guessable timestamp)
+    $currentSessionId = bin2hex(random_bytes(16));
 
     // set a session-only cookie
     setcookie("sessionId", $currentSessionId, 0, '/', 'botbreakdown.com');

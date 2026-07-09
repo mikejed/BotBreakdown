@@ -19,7 +19,7 @@ if (isset($_POST["totp"])) {
 
     if ($pendingRecordResult->num_rows > 0) {
         
-        $authIdentifier = uniqid('bba');
+        $authIdentifier = 'bba' . bin2hex(random_bytes(20));
         $createAccount = $db->prepare("UPDATE `scouterAuth` SET `uuid` = '" . $authIdentifier . "', `totp` = null, `token` = null, `expireDateTime` = DATE_ADD(NOW(), INTERVAL 30 DAY) WHERE `totp` = ? AND `expireDateTime` > NOW() AND `scouterId` = " . $pendingRecordData[0]["scouterId"]);
         $createAccount->bind_param("s", $_POST["totp"]);
         $createAccount->execute();
@@ -47,7 +47,7 @@ if (isset($_POST["totp"])) {
 
     if ($pendingRecordResult->num_rows > 0) {
 
-        $authIdentifier = uniqid('bba');
+        $authIdentifier = 'bba' . bin2hex(random_bytes(20));
         $createAccount = $db->prepare("UPDATE `scouterAuth` SET `uuid` = '" . $authIdentifier . "', `totp` = null, `token` = null, `expireDateTime` = DATE_ADD(NOW(), INTERVAL 30 DAY) WHERE `token` = ? AND `expireDateTime` > NOW() AND `scouterId` = " . $pendingRecordData[0]["scouterId"]);
         $createAccount->bind_param("s", $_GET["token"]);
         $createAccount->execute();
@@ -89,8 +89,8 @@ echo ('<div class="container">');
         if (isset($_POST["email"])) {
             // login form was submitted
 
-            // create token and TOTP
-            $token = password_hash(uniqid(rand() . "bba"), PASSWORD_DEFAULT);
+            // create token and TOTP (random_bytes: unguessable and URL-safe, unlike a bcrypt hash of uniqid)
+            $token = bin2hex(random_bytes(32));
             $totp = random_int(120000,989999);
 
             // look up the corresponding scouterId based on the email.
