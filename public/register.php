@@ -138,7 +138,7 @@ echo ('<div class="container">');
             $duplicateRecordResult = $findDuplicateRecord->get_result();
             $duplicateRecordData = $duplicateRecordResult->fetch_all(MYSQLI_ASSOC);
 
-            if ($findDuplicateRecord->num_rows > 0) {
+            if ($duplicateRecordResult->num_rows > 0) {
                 echo('<div class="alert alert-info"><h3>Oops</h3>This account already exists. Please <a href="/login.php">log in</a> instead.</div>');
             } else {
 
