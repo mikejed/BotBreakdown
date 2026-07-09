@@ -35,7 +35,7 @@ $dataPointInsertText = $db->prepare("INSERT INTO submissionData(`submissionId`,`
         if ($dataPoints->num_rows > 0) {
             
             // Only proceed with storing data if the needed data is included.
-            if (isset($_REQUEST["event"]) && isset($_REQUEST["teamNumber"]) & isset($_REQUEST["match"])) {
+            if (isset($_REQUEST["event"]) && isset($_REQUEST["teamNumber"]) && isset($_REQUEST["match"])) {
                 
                 // First, see if there's already a teamMatch record.
                 $qualLevel = "qm";
