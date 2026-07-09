@@ -121,8 +121,8 @@ $errmsg  = curl_error($eventRequest);
 
             $.ajax({
                 url: 'watchEvent.php',
-                type: 'GET',
-                data: { event: event }, // Send the event ID as a parameter
+                type: 'POST',
+                data: { event: event, csrf: '<?php echo $csrfToken; ?>' }, // Send the event ID as a parameter
                 success: function(response) {
                     $button.replaceWith(response);
                 },

@@ -83,6 +83,27 @@ if ($sessionResult->num_rows == 0) {
 
 
 // ---------------------------------------------------------
+// CSRF protection (double-submit cookie)
+// ---------------------------------------------------------
+if (!isset($_COOKIE["csrfToken"]) || strlen($_COOKIE["csrfToken"]) < 32) {
+    $_COOKIE["csrfToken"] = bin2hex(random_bytes(16)); // also set in $_COOKIE so forms rendered by this same request can embed it
+    setcookie("csrfToken", $_COOKIE["csrfToken"], 0, '/', '', true, true);
+}
+$csrfToken = $_COOKIE["csrfToken"];
+
+// Call this at the top of any request that changes data. The posted token must
+// match the cookie, which a cross-site attacker can neither read nor set.
+function requireCsrf() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST'
+        || !isset($_POST['csrf'])
+        || !hash_equals($_COOKIE['csrfToken'] ?? '', $_POST['csrf'])) {
+        http_response_code(403);
+        die('Invalid or missing security token. Please go back, reload the page, and try again.');
+    }
+}
+
+
+// ---------------------------------------------------------
 // Get all of the app settings from the database.
 // ---------------------------------------------------------
 $sql = "SELECT

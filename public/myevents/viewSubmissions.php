@@ -198,7 +198,7 @@ if (isset($_GET['event'])) {
             if ($scouterId == $currentPersonId) {
                 // Someday maybe an edit button will go here
             } else if ($previouslyFlagged == true) {
-                echo("<a class=\"btn btn-success btn-sm\" href=\"unflagSubmission.php?submissionId=$submissionId\" title=\"Unreport Submission\"><i class=\"fa-solid fa-bell-slash\"></i></a>");
+                echo("<form method=\"post\" action=\"unflagSubmission.php\" style=\"display:inline;\"><input type=\"hidden\" name=\"submissionId\" value=\"$submissionId\"><input type=\"hidden\" name=\"csrf\" value=\"$csrfToken\"><button type=\"submit\" class=\"btn btn-success btn-sm\" title=\"Unreport Submission\"><i class=\"fa-solid fa-bell-slash\"></i></button></form>");
             } else {
                 echo("<a class=\"btn btn-danger btn-sm\" href=\"flagSubmission.php?submissionId=$submissionId\" title=\"Report submission\"><i class=\"fa-solid fa-bell\"></i></a>");
             }

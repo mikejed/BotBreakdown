@@ -36,6 +36,7 @@ $recentFlagCount = $getRecentFlagCountResultData[0]["flags"];
                         }
                         ?>
                         <form method="post" action="flagSubmission.php">
+                            <input type="hidden" name="csrf" value="<?php echo $csrfToken; ?>">
                             <input type="hidden" name="submissionId" value="<?php echo e($_GET["submissionId"]); ?>">
                             <label class="form-label">Review Reason</label>
                             <textarea name="reviewReason" class="form-control"></textarea>
@@ -51,6 +52,7 @@ $recentFlagCount = $getRecentFlagCountResultData[0]["flags"];
 
         // they've submitted a flag report.
         } else if (isset($_POST["submissionId"]) && isset($_POST["reviewReason"])) {
+            requireCsrf();
             if ($recentFlagCount >= $flagLimit) {
                 echo("<div class=\"alert alert-warning\">Sorry, you have reached the limit of the items you can flag for now.</div>");
                 logHistory("flagLimitReached", json_encode($_REQUEST), "submission", $_POST["submissionId"]);
