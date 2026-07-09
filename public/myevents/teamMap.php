@@ -12,7 +12,7 @@ if (!isset($allowCache) || $allowCache != true) {
 // log a page view.
 logHistory("mapView", $_SERVER['REQUEST_URI']);
 
-header('Content-type: image/svg');
+header('Content-type: image/svg+xml');
 
 $firstEventCode = substr($_REQUEST["event"],4);
 
