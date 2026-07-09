@@ -1,0 +1,3 @@
+# Real database credentials live outside the webroot and outside the repo history.
+/_connectionStrings.php
+php_errors.log
