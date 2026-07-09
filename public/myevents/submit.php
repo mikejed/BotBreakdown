@@ -78,7 +78,7 @@ $dataPointInsertText = $db->prepare("INSERT INTO submissionData(`submissionId`,`
 
 
                     // If there's a match in the API, create a teamMatch record. (Don't create one otherwise, in case they make changes before submitting).
-                    if (isset($setalliance) && strlen($setAlliance) >= 3) {
+                    if (isset($setAlliance) && strlen($setAlliance) >= 3) {
                         // We found the alliance.
                         $teamMatchCreate->bind_param("sssi", $_REQUEST["event"], $_REQUEST["level"], $_REQUEST["teamNumber"], $_REQUEST["match"]);
                         $teamMatchCreate->execute();
