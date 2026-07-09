@@ -79,8 +79,10 @@ $dataPointInsertText = $db->prepare("INSERT INTO submissionData(`submissionId`,`
 
                     // If there's a match in the API, create a teamMatch record. (Don't create one otherwise, in case they make changes before submitting).
                     if (isset($setAlliance) && strlen($setAlliance) >= 3) {
-                        // We found the alliance.
-                        $teamMatchCreate->bind_param("sssi", $_REQUEST["event"], $_REQUEST["level"], $_REQUEST["teamNumber"], $_REQUEST["match"]);
+                        // We found the alliance. Bind the literal 'qm' level (as the
+                        // sibling create below does) - the 2025/2026 forms don't post a
+                        // 'level' field, and teamMatch.level is NOT NULL.
+                        $teamMatchCreate->bind_param("sssi", $_REQUEST["event"], $qualLevel, $_REQUEST["teamNumber"], $_REQUEST["match"]);
                         $teamMatchCreate->execute();
                         $teamMatchGet->execute();
                         $teamMatchGetResult = $teamMatchGet->get_result();
