@@ -142,7 +142,7 @@ echo ('<div class="container">');
                 echo('<div class="alert alert-info"><h3>Oops</h3>This account already exists. Please <a href="/login.php">log in</a> instead.</div>');
             } else {
 
-                if ($_POST["email"] == $_POST["emailConfirm"] && strlen($_POST["email"] > 6)) {
+                if ($_POST["email"] == $_POST["emailConfirm"] && strlen($_POST["email"]) > 6) {
                     // email addresses match. Create auth codes, send email, and prompt for TOTP
 
                     // create token and TOTP (random_bytes: unguessable and URL-safe, unlike a bcrypt hash of uniqid)
