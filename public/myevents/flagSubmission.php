@@ -29,7 +29,7 @@ $recentFlagCount = $getRecentFlagCountResultData[0]["flags"];
                     if ($flagLimit - $recentFlagCount > 0 || $isAdmin) {
                     
                         echo("<div class=\"alert alert-info\">You have flagged $recentFlagCount submissions in the last (4) days. ");
-                        if ($asAdmin) {
+                        if ($isAdmin) {
                             echo("You are an administrator so you're not limited in the number of flags you submit.</div>");
                         } else {
                             echo("You may not flag more than $flagLimit, so if you submit this, you will have " . $flagLimit - $recentFlagCount - 1 . " items left you can flag.</div>");
