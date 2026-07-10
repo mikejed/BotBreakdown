@@ -71,7 +71,8 @@ include './_head.php';
 
         <div class="alert alert-info mt-4">
             <h4>Latest Update</h4>
-            <p>We are ready to go for the 2026 season! The events and teams are loading, the form is updated, and we're excited to let you get your hands on the new timed "shooting sessions" data capture method. Let's go 'bots!</p>
+            <p>Wow- what a season this year! Don't forget that all of the off-season events are available for scouting here as well, as long as they are listed as events on the <i>First</i> site.</p>
+            <p>In July we went through a Language Model code review and issued some bugfixes, and everything should be even better than ever. We'll be publishing a new blog post soon also, showing some patterns for analyzing the new "timing" features we introduced this season - stay tuned!</p>
         </div>
         
     </div>
