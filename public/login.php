@@ -11,15 +11,25 @@ $sessions = $db->query("DELETE FROM `scouterAuth` WHERE `expireDateTime` < NOW()
 if (isset($_POST["totp"])) {
     // totp was provided; attempt to authenticate
 
-    $findPendingRecord = $db->prepare("SELECT `scouterId` FROM `scouterAuth` WHERE `totp` = ? AND `expireDateTime` > NOW() ORDER BY `expireDateTime` DESC");
-    $findPendingRecord->bind_param("s", $_POST["totp"]);
+    // Rate limit: a 6-digit code is brute-forceable, so cap failed attempts per session.
+    $recentFailures = $db->prepare("SELECT count(1) AS `failures` FROM `history` WHERE `sessionId` = ? AND `operation` = 'loginCodeFailed' AND `modifiedDateTime` > DATE_SUB(NOW(), INTERVAL 15 MINUTE)");
+    $recentFailures->bind_param("s", $currentSessionId);
+    $recentFailures->execute();
+    $recentFailuresData = $recentFailures->get_result()->fetch_all(MYSQLI_ASSOC);
+
+    // Scope the code to the email that requested it, so a code only works for its own account.
+    $submittedEmail = isset($_POST["email"]) ? $_POST["email"] : '';
+    $findPendingRecord = $db->prepare("SELECT auth.`scouterId` FROM `scouterAuth` auth INNER JOIN `scouter` s ON s.`id` = auth.`scouterId` WHERE auth.`totp` = ? AND s.`email` = ? AND auth.`expireDateTime` > NOW() ORDER BY auth.`expireDateTime` DESC");
+    $findPendingRecord->bind_param("ss", $_POST["totp"], $submittedEmail);
     $findPendingRecord->execute();
     $pendingRecordResult = $findPendingRecord->get_result();
     $pendingRecordData = $pendingRecordResult->fetch_all(MYSQLI_ASSOC);
 
-    if ($pendingRecordResult->num_rows > 0) {
+    if ($recentFailuresData[0]["failures"] >= 5) {
+        $loginState='tooManyAttempts';
+    } elseif ($pendingRecordResult->num_rows > 0) {
         
-        $authIdentifier = uniqid('bba');
+        $authIdentifier = 'bba' . bin2hex(random_bytes(20));
         $createAccount = $db->prepare("UPDATE `scouterAuth` SET `uuid` = '" . $authIdentifier . "', `totp` = null, `token` = null, `expireDateTime` = DATE_ADD(NOW(), INTERVAL 30 DAY) WHERE `totp` = ? AND `expireDateTime` > NOW() AND `scouterId` = " . $pendingRecordData[0]["scouterId"]);
         $createAccount->bind_param("s", $_POST["totp"]);
         $createAccount->execute();
@@ -32,6 +42,7 @@ if (isset($_POST["totp"])) {
         // echo('<div class="alert alert-success">You have been logged in</div>');
         
     } else {
+        logHistory("loginCodeFailed", $submittedEmail);
         $loginState='codeExpired';
         // echo('<div class="alert alert-danger">Your confirmation code may have expired. Please double-check your code or try registering again.</div>');
     }
@@ -47,7 +58,7 @@ if (isset($_POST["totp"])) {
 
     if ($pendingRecordResult->num_rows > 0) {
 
-        $authIdentifier = uniqid('bba');
+        $authIdentifier = 'bba' . bin2hex(random_bytes(20));
         $createAccount = $db->prepare("UPDATE `scouterAuth` SET `uuid` = '" . $authIdentifier . "', `totp` = null, `token` = null, `expireDateTime` = DATE_ADD(NOW(), INTERVAL 30 DAY) WHERE `token` = ? AND `expireDateTime` > NOW() AND `scouterId` = " . $pendingRecordData[0]["scouterId"]);
         $createAccount->bind_param("s", $_GET["token"]);
         $createAccount->execute();
@@ -80,7 +91,10 @@ include './_head.php';
 // ---------------------------------- Begin body of page ---------------------------------------
 echo ('<div class="container">');
 
-    if ($loginState == 'codeExpired') {
+    if ($loginState == 'tooManyAttempts') {
+        echo('<div class="alert alert-danger">Too many incorrect codes. Please wait 15 minutes and then try logging in again.</div>');
+
+    } elseif ($loginState == 'codeExpired') {
         echo('<div class="alert alert-danger">Your confirmation code may have expired. Please double-check your code or try logging in again.</div>');
 
     } else {
@@ -89,8 +103,8 @@ echo ('<div class="container">');
         if (isset($_POST["email"])) {
             // login form was submitted
 
-            // create token and TOTP
-            $token = password_hash(uniqid(rand() . "bba"), PASSWORD_DEFAULT);
+            // create token and TOTP (random_bytes: unguessable and URL-safe, unlike a bcrypt hash of uniqid)
+            $token = bin2hex(random_bytes(32));
             $totp = random_int(120000,989999);
 
             // look up the corresponding scouterId based on the email.
@@ -103,7 +117,9 @@ echo ('<div class="container">');
             if ($foundScouterResult->num_rows > 0) {
                 // Account already exists. Store token, TOTP, and sessionId in scouterAuth table.
 
-                $storePending = $db->prepare("INSERT INTO scouterAuth(`scouterId`,`token`,`totp`,`expireDateTime`) VALUES (?, '" . $token . "', '" . $totp . "', DATE_ADD(NOW(), INTERVAL 1 HOUR));");
+                // uuid is filled in on confirmation; insert '' explicitly so the row is
+                // valid under a strict sql_mode (the column is NOT NULL with no default).
+                $storePending = $db->prepare("INSERT INTO scouterAuth(`uuid`,`scouterId`,`token`,`totp`,`expireDateTime`) VALUES ('', ?, '" . $token . "', '" . $totp . "', DATE_ADD(NOW(), INTERVAL 1 HOUR));");
                 $storePending->bind_param("i", $foundScouterData[0]["id"]);
                 $storePending->execute();
 
@@ -150,8 +166,9 @@ echo ('<div class="container">');
                             Confirmation Code
                         </div>
                         <div class="card-body">
-                            <form id="confirmationForm" method="post" action="/login.php<?php if ($_SERVER['QUERY_STRING'] != '') { echo('?' . $_SERVER['QUERY_STRING']); } ?>">
+                            <form id="confirmationForm" method="post" action="/login.php<?php if ($_SERVER['QUERY_STRING'] != '') { echo('?' . e($_SERVER['QUERY_STRING'])); } ?>">
                                 <input type="hidden" id="totp" name="totp" />
+                                <input type="hidden" name="email" value="<?php echo htmlspecialchars($_POST["email"], ENT_QUOTES); ?>" />
                                 <div class="form-group d-flex justify-content-center mb-4">
                                     <input type="text" class="form-control totp-digit" maxlength="1" pattern="\d" required>
                                     <input type="text" class="form-control totp-digit" maxlength="1" pattern="\d" required>
@@ -164,7 +181,7 @@ echo ('<div class="container">');
                             </form>
                             <hr>
                             <form id="resendForm" method="post" action="/login.php">
-                                <input type="hidden" id="email" name="email" value="<?php echo $_POST["email"]; ?>" />
+                                <input type="hidden" id="email" name="email" value="<?php echo e($_POST["email"]); ?>" />
                                 Missed the message? You can resend it here:<br>
                                 <input type="submit" value="Resend Code" />
                             </form>
@@ -226,7 +243,7 @@ echo ('<div class="container">');
                             <h3 class="card-title">Login</h3>
                         </div>
                         <div class="card-body">
-                            <form id="loginForm" method="post" action="/login.php<?php if ($_SERVER['QUERY_STRING'] != '') { echo('?' . $_SERVER['QUERY_STRING']); } ?>">
+                            <form id="loginForm" method="post" action="/login.php<?php if ($_SERVER['QUERY_STRING'] != '') { echo('?' . e($_SERVER['QUERY_STRING'])); } ?>">
                                 <label for="email" class="form-label">Email Address</label>
                                 <input type="email" id="email" name="email" class="form-control" placeholder="you@domain.com" required>
                                 <button class="btn btn-primary float-end mt-4">Submit</button>

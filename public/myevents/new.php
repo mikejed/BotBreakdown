@@ -85,18 +85,18 @@ $errmsg  = curl_error($eventRequest);
                 echo "  <div class=\"col-md-3 mb-4 eventCard " . $class . "\">
                             <div class=\"card h-100 flex-grow-1\">
                                 <div class=\"card-header\">
-                                    <h5 class=\"card-title\">" . $event["name"] . "</h5>
+                                    <h5 class=\"card-title\">" . e($event["name"]) . "</h5>
                                 </div>
                                 <div class=\"card-body\">
                                     " . $schedule . "
                                     <strong>Location:</strong><br>
-                                    " . $event["venue"] . "<br>
-                                    " . $event["address"] . "<br>
-                                    " . $event["city"] . " " . $event["stateprov"] . "
+                                    " . e($event["venue"]) . "<br>
+                                    " . e($event["address"]) . "<br>
+                                    " . e($event["city"]) . " " . e($event["stateprov"]) . "
                                 </div>
                                 <div class=\"card-footer text-end\">
-                                    <a href=\"#!\" class=\"btn $watchClass watch-toggle float-start\" data-event=\"". $currentSeason . $event["code"] . "\" title=\"Add this to events I'm watching\"><i class=\"fa-regular fa-eye\"></i></a>
-                                    <a href=\"event/" . $currentSeason . $event["code"] . "\" class=\"btn btn-outline-secondary\" role=\"button\">Add Data</a>
+                                    <a href=\"#!\" class=\"btn $watchClass watch-toggle float-start\" data-event=\"". e($currentSeason . $event["code"]) . "\" title=\"Add this to events I'm watching\"><i class=\"fa-regular fa-eye\"></i></a>
+                                    <a href=\"event/" . rawurlencode($currentSeason . $event["code"]) . "\" class=\"btn btn-outline-secondary\" role=\"button\">Add Data</a>
                                 </div>
                             </div>
                         </div>";
@@ -121,8 +121,8 @@ $errmsg  = curl_error($eventRequest);
 
             $.ajax({
                 url: 'watchEvent.php',
-                type: 'GET',
-                data: { event: event }, // Send the event ID as a parameter
+                type: 'POST',
+                data: { event: event, csrf: '<?php echo $csrfToken; ?>' }, // Send the event ID as a parameter
                 success: function(response) {
                     $button.replaceWith(response);
                 },

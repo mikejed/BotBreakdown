@@ -105,7 +105,7 @@ if ($showIndex == 1) {
 
     foreach ($blogIndexResultData as $item) {
         $summary = nl2br(strip_tags($item["content"]));
-        if (strlen($summary>300)) {
+        if (strlen($summary) > 300) {
             $summary = substr($summary,0,300);
             $pos = strrpos($summary, ' ');
             if ($pos !== false && $pos > 200) { // If there is no space in the last 100 chars, just truncate

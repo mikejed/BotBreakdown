@@ -4,6 +4,8 @@ $pageTitle = "View " . $_GET["event"] . " Submissions";
 include '../_dbConnection.php';
 include '../_head.php';
 
+$firstEventCode = substr($_GET["event"],4);
+
 // Get the event name
 $eventName = "";
 $eventNameQuery = $db->prepare("SELECT `eventName` FROM `eventData` WHERE `event` = ?");
@@ -33,24 +35,25 @@ if(strlen($eventName) < 1) {
 }
 
 echo("<div class=\"container mb-3\">
-        <h1>Submissions for " . $eventName . "</h1>
-        <a href=\"viewData.php?event=" . $_GET["event"] . "\" class=\"btn btn-outline-secondary\"><i class=\"fa-solid fa-left-long\"></i> Back to event</a>
+        <h1>Submissions for " . e($eventName) . "</h1>
+        <a href=\"viewData.php?event=" . rawurlencode($_GET["event"]) . "\" class=\"btn btn-outline-secondary\"><i class=\"fa-solid fa-left-long\"></i> Back to event</a>
         <hr>
     ");
 
 if (isset($_GET['event'])) {
     if (isset($_GET["allData"]) && $_GET["allData"] == "true") {
         $showAllData = "";
-        echo("<a href=\"" . str_replace("&allData=true", "", $_SERVER['REQUEST_URI']) . "\" class=\"btn btn-outline-warning\">Show condensed table</a>");
+        echo("<a href=\"" . e(str_replace("&allData=true", "", $_SERVER['REQUEST_URI'])) . "\" class=\"btn btn-outline-warning\">Show condensed table</a>");
     } else {
         $showAllData = "AND dp.`dataSet` = 'minimum'";
-        echo("<a href=\"" . $_SERVER['REQUEST_URI'] . "&allData=true\" class=\"btn btn-outline-warning\">Show all fields</a>");
+        echo("<a href=\"" . e($_SERVER['REQUEST_URI']) . "&allData=true\" class=\"btn btn-outline-warning\">Show all fields</a>");
     }
-    echo("<a href=\"getRawSubmissions.php?event=" . $_GET["event"] . "\" class=\"float-end btn btn-primary\"><i class=\"fa-solid fa-file-csv\"></i> Export Submissions</a>
+    echo("<a href=\"getRawSubmissions.php?event=" . rawurlencode($_GET["event"]) . "\" class=\"float-end btn btn-primary\"><i class=\"fa-solid fa-file-csv\"></i> Export Submissions</a>
         </div>");
 
     $dataPointGet = $db->prepare("SELECT dp.`id`, dp.`name`, dp.`dataType`, dp.`dataSet` FROM `dataPoint` dp WHERE `season` = ? $showAllData");
-    $dataPointGet->bind_param("i",substr($_GET['event'],0,4));
+    $season = substr($_GET['event'], 0, 4);
+    $dataPointGet->bind_param("i", $season);
     $dataPointGet->execute();
     $dataPointGetResult = $dataPointGet->get_result();
     $dataPointGetResultData = $dataPointGetResult->fetch_all(MYSQLI_ASSOC);
@@ -66,11 +69,13 @@ if (isset($_GET['event'])) {
                 $dataPointColumns .= ", ";
                 $joinColumns .= "\n";
             }
-            echo ("<th>" . $dataItem["name"] . "</th>");
+            echo ("<th>" . e($dataItem["name"]) . "</th>");
+            // Each data<id> join yields at most one row per submission (the GROUP BY key),
+            // so MAX() returns that single value while satisfying ONLY_FULL_GROUP_BY.
             if ($dataItem["dataType"] == "text") {
-                $dataPointColumns .= "data" . $dataItem["id"] . ".`dataText` AS `" . $dataItem["name"] . "`\n";
+                $dataPointColumns .= "MAX(data" . $dataItem["id"] . ".`dataText`) AS `" . $dataItem["name"] . "`\n";
             } else {
-                $dataPointColumns .= "data" . $dataItem["id"] . ".`dataValue` AS `" . $dataItem["name"] . "`\n";
+                $dataPointColumns .= "MAX(data" . $dataItem["id"] . ".`dataValue`) AS `" . $dataItem["name"] . "`\n";
             }
             
             $joinColumns .= "LEFT OUTER JOIN `submissionData` data" . $dataItem["id"] . " ON data" . $dataItem["id"] . ".`dataPointId` = " . $dataItem["id"] . " AND sub.`id` = data" . $dataItem["id"] . ".`submissionId`";
@@ -191,13 +196,14 @@ if (isset($_GET['event'])) {
             unset($row["submissionId"]);
             unset($row["scouterId"]);
             unset($row["previouslyFlagged"]);
-            echo ("<tr><td>" . implode("</td><td>", $row) . "</td><td>");
+            $safeCells = array_map(function($value) { return nl2br(e($value)); }, $row);
+            echo ("<tr><td>" . implode("</td><td>", $safeCells) . "</td><td>");
             
             
             if ($scouterId == $currentPersonId) {
                 // Someday maybe an edit button will go here
             } else if ($previouslyFlagged == true) {
-                echo("<a class=\"btn btn-success btn-sm\" href=\"unflagSubmission.php?submissionId=$submissionId\" title=\"Unreport Submission\"><i class=\"fa-solid fa-bell-slash\"></i></a>");
+                echo("<form method=\"post\" action=\"unflagSubmission.php\" style=\"display:inline;\"><input type=\"hidden\" name=\"submissionId\" value=\"$submissionId\"><input type=\"hidden\" name=\"csrf\" value=\"$csrfToken\"><button type=\"submit\" class=\"btn btn-success btn-sm\" title=\"Unreport Submission\"><i class=\"fa-solid fa-bell-slash\"></i></button></form>");
             } else {
                 echo("<a class=\"btn btn-danger btn-sm\" href=\"flagSubmission.php?submissionId=$submissionId\" title=\"Report submission\"><i class=\"fa-solid fa-bell\"></i></a>");
             }

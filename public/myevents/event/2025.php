@@ -7,6 +7,8 @@ echo("<link href=\"/assets/css/dataStyles.css\" rel=\"stylesheet\" />");
 
 if ( isset($_GET["event"]) ) {
     $firstEventCode = substr($_GET["event"],4);
+    // JSON-encoded copy of the event code, safe to embed in JavaScript string contexts.
+    $eventJs = json_encode($_GET["event"], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
 
     // Get the event name
     $eventName = "";
@@ -59,7 +61,7 @@ if ( isset($_GET["event"]) ) {
 
             <div class="row"><div class="col">
                 <a class="btn btn-outline-secondary float-end" title="Review my submissions" href="javascript:viewHistory();"><i class="fa-solid fa-clock-rotate-left"></i></a>
-                <h1><?php echo $eventName; ?></h1>
+                <h1><?php echo e($eventName); ?></h1>
             </div></div>
             <div class="row">
 
@@ -88,10 +90,10 @@ if ( isset($_GET["event"]) ) {
                     echo "<select class=\"form-control\" id=\"teamNumber\" name=\"teamNumber\" required \">
                     <option disabled selected value=\"\">(select team)</option>";
                     foreach( $a_Teams as $team ) {
-                        echo("<option value=\"$team->teamNumber\">$team->teamNumber - $team->nameShort</option>");
+                        echo("<option value=\"" . e($team->teamNumber) . "\">" . e($team->teamNumber) . " - " . e($team->nameShort) . "</option>");
                     }
                     echo "</select>";
-                    echo "<input type=\"hidden\" name=\"event\" value=\"" . $_GET["event"] . "\" />";
+                    echo "<input type=\"hidden\" name=\"event\" value=\"" . e($_GET["event"]) . "\" />";
                     } else {
 ?>
                         <input type="number" class="form-control" id="teamNumber" name="teamNumber" min="1" required>
@@ -99,7 +101,7 @@ if ( isset($_GET["event"]) ) {
 <?php
                         echo "</div><div class=\"col-md\">
                                 <label for=\"event\" class=\"form-label\">Event Code</label>
-                                <input type=\"text\" id=\"event\" name=\"event\" value=\"" . $_GET["event"] . "\" class=\"form-control\" />
+                                <input type=\"text\" id=\"event\" name=\"event\" value=\"" . e($_GET["event"]) . "\" class=\"form-control\" />
                             ";
                     }
 ?>
@@ -565,7 +567,7 @@ if ( isset($_GET["event"]) ) {
                 </h2>
                 <div id="advancedOptions" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
                     <div class="accordion-body">
-                        <div><strong>Delete my <?php echo $_GET["event"]; ?> QR Code history</strong></div>
+                        <div><strong>Delete my <?php echo e($_GET["event"]); ?> QR Code history</strong></div>
                         <ul>
                             <li>This will remove your submission QR Codes from this device.</li>
                             <li>Unsubmitted match data will be lost forever.</li>
@@ -737,28 +739,28 @@ if ( isset($_GET["event"]) ) {
                     
                     $('#submitError').hide();
                     // Store the URL in localStorage. Set/get the nextIndex
-                    if (!localStorage.getItem('<?php echo $_GET["event"]; ?>nextIndex') > 0) {
-                        localStorage.setItem('<?php echo $_GET["event"]; ?>nextIndex',1);
+                    if (!localStorage.getItem((<?php echo $eventJs; ?> + 'nextIndex')) > 0) {
+                        localStorage.setItem((<?php echo $eventJs; ?> + 'nextIndex'),1);
                     }
-                    var thisIndex = localStorage.getItem('<?php echo $_GET["event"]; ?>nextIndex');
+                    var thisIndex = localStorage.getItem((<?php echo $eventJs; ?> + 'nextIndex'));
 
                     // Set the URL of the submit page including data in GET string.
                     var dataSubmitUrl = 'https://www.botbreakdown.com/myevents/submit.php?' + $('#eventForm').serialize();
-                    localStorage.setItem('<?php echo $_GET["event"]; ?>' + thisIndex, dataSubmitUrl);
+                    localStorage.setItem(<?php echo $eventJs; ?> + thisIndex, dataSubmitUrl);
 
                     // Set the match name.
                     var matchTitle = 'Match ' + $('#match').val() + ', Team ' + $('#teamNumber').val();
-                    localStorage.setItem('<?php echo $_GET["event"]; ?>' + thisIndex + 'title', matchTitle)
+                    localStorage.setItem(<?php echo $eventJs; ?> + thisIndex + 'title', matchTitle)
 
                     // Increment the nextIndex in localStorage
-                    localStorage.setItem('<?php echo $_GET["event"]; ?>nextIndex',thisIndex*1+1);
+                    localStorage.setItem((<?php echo $eventJs; ?> + 'nextIndex'),thisIndex*1+1);
 
                     // Now check if we're online. If so, submit. If not, show QR code.
                     $.ajax({url: "/pingTest.php", cache: false, timeout: 1500}).done(function( data ) {
                         // Probably online (Note: data contains result)
 
                         // Indicate this URL has been submitted.
-                        localStorage.setItem('<?php echo $_GET["event"]; ?>' + thisIndex+'submitted','true');
+                        localStorage.setItem(<?php echo $eventJs; ?> + thisIndex+'submitted','true');
 
                         // Then actually submit it.
                         form.submit();
@@ -767,7 +769,7 @@ if ( isset($_GET["event"]) ) {
                         // Offline or server down.
 
                         // Indicate this URL hasn't been submitted.
-                        localStorage.setItem('<?php echo $_GET["event"]; ?>' + thisIndex+'submitted','false');
+                        localStorage.setItem(<?php echo $eventJs; ?> + thisIndex+'submitted','false');
 
                         // clear the QR div's previous content.
                         $('#modal-actions').html("");
@@ -866,19 +868,19 @@ if ( isset($_GET["event"]) ) {
         }
 
         function deleteHistory() {
-            var nextIndex = localStorage.getItem('<?php echo $_GET["event"]; ?>nextIndex');
+            var nextIndex = localStorage.getItem((<?php echo $eventJs; ?> + 'nextIndex'));
             if (nextIndex > 1) {
                 for (let i = 1; i < nextIndex; i++) {
-                    localStorage.removeItem('<?php echo $_GET["event"]; ?>' + i);
-                    localStorage.removeItem('<?php echo $_GET["event"]; ?>' + i + 'title');
-                    localStorage.removeItem('<?php echo $_GET["event"]; ?>' + i + 'submitted');
+                    localStorage.removeItem(<?php echo $eventJs; ?> + i);
+                    localStorage.removeItem(<?php echo $eventJs; ?> + i + 'title');
+                    localStorage.removeItem(<?php echo $eventJs; ?> + i + 'submitted');
                 }
             }
-            localStorage.removeItem('<?php echo $_GET["event"]; ?>nextIndex');
+            localStorage.removeItem((<?php echo $eventJs; ?> + 'nextIndex'));
         }
 
         function viewHistory(i) {
-            var maxIndex = localStorage.getItem('<?php echo $_GET["event"]; ?>nextIndex')-1;
+            var maxIndex = localStorage.getItem((<?php echo $eventJs; ?> + 'nextIndex'))-1;
             if (!i > 0) { i = maxIndex; }
 
             // get next index
@@ -893,13 +895,17 @@ if ( isset($_GET["event"]) ) {
             $('#modal-actions').html("<button class=\"btn btn-outline-info\" onClick=\"viewHistory(" + historyPrevIndex + ")\"><i class=\"fa-solid fa-chevron-left\"></i> Previous</button><button class=\"btn btn-outline-info\" onClick=\"viewHistory(" + historyNextIndex + ")\">Next ️<i class=\"fa-solid fa-chevron-right\"></i></button>");
             
             // Show submit button for this code, only if it hasn't already been submitted
-            if (localStorage.getItem('<?php echo $_GET["event"]; ?>' + i + 'submitted') != "true") {
+            if (localStorage.getItem(<?php echo $eventJs; ?> + i + 'submitted') != "true") {
 
                 // It hasn't been submitted. So check if we're online. If so, enable submit button. If not, show disabled "go online to submit" message.
                 $.ajax({url: "/pingTest.php", cache: false, timeout: 500}).done(function( data ) {
 
                     // response received; probably online
-                    $('#modal-actions2').html("<button onClick=\"localStorage.setItem('<?php echo $_GET["event"]; ?>' + " + i + " +'submitted','true');window.location.href='" + localStorage.getItem('<?php echo $_GET["event"]; ?>' + i) + "\';\" class=\"btn btn-outline-success\">Submit</button>");
+                    var submitButton = $('<button class="btn btn-outline-success">Submit</button>').on('click', function() {
+                        localStorage.setItem(<?php echo $eventJs; ?> + i + 'submitted', 'true');
+                        window.location.href = localStorage.getItem(<?php echo $eventJs; ?> + i);
+                    });
+                    $('#modal-actions2').empty().append(submitButton);
 
                 }).fail(function(err){
                     // ping failed; offline or server down
@@ -907,10 +913,10 @@ if ( isset($_GET["event"]) ) {
                 })
             }
             $('#modalQRCode').html("");
-            $('#codeModalLabel').text("Submission " + i + ": " + localStorage.getItem('<?php echo $_GET["event"]; ?>' + i + 'title'))
+            $('#codeModalLabel').text("Submission " + i + ": " + localStorage.getItem(<?php echo $eventJs; ?> + i + 'title'))
 
             // Set and show the QR code in the modal.
-            new QRCode(document.getElementById("modalQRCode"), {text:localStorage.getItem('<?php echo $_GET["event"]; ?>' + i),width:800,height:800,correctLevel:QRCode.CorrectLevel.L});
+            new QRCode(document.getElementById("modalQRCode"), {text:localStorage.getItem(<?php echo $eventJs; ?> + i),width:800,height:800,correctLevel:QRCode.CorrectLevel.L});
             $('#modalQRCode > img').addClass('img-fluid');
             codeModal.show();
         }

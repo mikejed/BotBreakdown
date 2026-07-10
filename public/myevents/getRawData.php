@@ -15,14 +15,15 @@ header('Content-type: text/csv');
 header('Content-Disposition: attachment; filename="' . $_GET["event"] . '-data.csv"');
 
 // set up request for event results, in case we need it. Don't execute it yet though- we only do that once per page and only IF a match is found without this data already set.
-$matchRequest = curl_init("https://frc-api.firstinspires.org/v3.0/$currentSeason/schedule/" . $firstEventCode . "?tournamentLevel=Qualification");
+$matchRequest = curl_init("https://frc-api.firstinspires.org/v3.0/$currentSeason/matches/" . $firstEventCode . "?tournamentLevel=qualification");
 curl_setopt_array($matchRequest, $firstCurlOpt);
 
 // OK let's start getting the data from the database that we want to show.
 if (isset($_GET['event'])) {
 
     $dataPointGet = $db->prepare("SELECT `id`,`name`,`dataType`,`dataSet` FROM `dataPoint` WHERE `season` = ?");
-    $dataPointGet->bind_param("i",substr($_GET['event'],0,4));
+    $season = substr($_GET['event'], 0, 4);
+    $dataPointGet->bind_param("i", $season);
     $dataPointGet->execute();
     $dataPointGetResult = $dataPointGet->get_result();
     $dataPointGetResultData = $dataPointGetResult->fetch_all(MYSQLI_ASSOC);
@@ -123,46 +124,43 @@ if (isset($_GET['event'])) {
         $matchGetResultData = $matchGetResult->fetch_all(MYSQLI_ASSOC);
         
         foreach ($matchGetResultData as $row) {
+            $setAlliance = "";
+            $setResults = "";
 
             // Check to see if we have the FIRST results for the team's alliance results - if not go get it and store it in the teamMatch table.
-            // Determine alliance, if needed and if possible
-            if (strlen($row["alliance"]) < 3) {
+            // Same condition as viewData.php: fetch when results are missing, or stored but without final scores yet.
+            if (strlen($row["allianceResults"]) < 5 || (json_validate($row["allianceResults"]) && isset(json_decode($row["allianceResults"], true)["scoreRedFinal"]) == false)) {
                 if (isset($allianceContent) == false) {
                     $allianceContent = curl_exec($matchRequest);
                     $err     = curl_errno($matchRequest);
                     $errmsg  = curl_error($matchRequest);
                 }
-                
-                $a_matches = json_decode($allianceContent, true);
-                if (isset($a_matches[0]['alliances']) && is_array($a_matches[0]['alliances'])) {
-                    $setAlliance = "";
-                    foreach ($a_matches as $match) {
-                        if ($match["key"] == $_GET["event"] . "_" . $row["level"] . $row["match"]) {
-                            foreach ($match["alliances"]["red"]["team_keys"] as $team) {
-                                if ($team == $row["teamNumber"]) {
-                                    $setAlliance = "Red";
-                                    $row["alliance"] = "Red";
-                                    $setResults = json_encode($match["score_breakdown"]["red"]);
+
+                // Parse the FIRST API matches format (Matches[].teams[].station), as viewData.php does.
+                if (json_validate($allianceContent)) {
+                    $a_Matches = json_decode($allianceContent, true)["Matches"];
+                    foreach ($a_Matches as $match) {
+                        if ($match["matchNumber"] == $row["match"]) {
+                            foreach ($match["teams"] as $team) {
+                                if ($team["teamNumber"] == $row["teamNumber"]) {
+                                    if (str_starts_with($team["station"], "Red")) {
+                                        $setAlliance = "Red";
+                                        $setResults = json_encode($match);
+                                    } else if (str_starts_with($team["station"], "Blue")) {
+                                        $setAlliance = "Blue";
+                                        $setResults = json_encode($match);
+                                    }
+                                }
+
+                                // Now if we found the alliance, we have the data from FIRST. Update it into the [teamMatch] table and this CSV row.
+                                if ($setAlliance <> "") {
+                                    $matchResultsUpdate->bind_param("ssi", $setAlliance, $setResults, $row["teamMatchId"]);
+                                    $matchResultsUpdate->execute();
+                                    $row["alliance"] = $setAlliance;
+                                    $row["allianceResults"] = $setResults;
                                     break;
                                 }
                             }
-                            if ($setAlliance == "") {
-                                foreach ($match["alliances"]["blue"]["team_keys"] as $team) {
-                                    if ($team == $row["teamNumber"]) {
-                                        $setAlliance = "Blue";
-                                        $row["alliance"] = "Blue";
-                                        $setResults = json_encode($match["score_breakdown"]["blue"]);
-                                        break;
-                                    }
-                                }
-                            }
-
-                            // Now if we found the alliance, we have the data from FIRST. Update it into the [teamMatch] table
-                            if ($setAlliance <> "") {
-                                $matchResultsUpdate->bind_param("ssi", $setAlliance, $setResults, $row["teamMatchId"]);
-                                $matchResultsUpdate->execute();
-                            }
-                            break;
                         }
                     }
                 }

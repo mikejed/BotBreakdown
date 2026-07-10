@@ -57,11 +57,11 @@ include '../_head.php';
                                                 $eventNameOrCode = $row["event"];
                                             }
                                             echo "<tr>
-                                                    <td>" . $eventNameOrCode . "</td>
-                                                    <td class=\"d-none d-md-table-cell\">" . $row["event"] . "</td>
+                                                    <td>" . e($eventNameOrCode) . "</td>
+                                                    <td class=\"d-none d-md-table-cell\">" . e($row["event"]) . "</td>
                                                     <td class=\"text-end\">
-                                                        <a href=\"viewData.php?event=" . $row["event"] . "\" class=\"btn btn-primary\" title=\"View Data\"><i class=\"fa-solid fa-file-lines\"></i> View Data</a>
-                                                        <a href=\"getRawData.php?event=" . $row["event"] . "\" class=\"btn btn-primary\" title=\"Download CSV\"><i class=\"fa-solid fa-table\"></i> Download .csv</a>
+                                                        <a href=\"viewData.php?event=" . rawurlencode($row["event"]) . "\" class=\"btn btn-primary\" title=\"View Data\"><i class=\"fa-solid fa-file-lines\"></i> View Data</a>
+                                                        <a href=\"getRawData.php?event=" . rawurlencode($row["event"]) . "\" class=\"btn btn-primary\" title=\"Download CSV\"><i class=\"fa-solid fa-table\"></i> Download .csv</a>
                                                     </td>
                                                 </tr>";
                                         }
@@ -129,11 +129,11 @@ include '../_head.php';
                                             $eventNameOrCode = $row["event"];
                                         }
                                         echo "<tr>
-                                                <td>" . $eventNameOrCode . "</td>
-                                                <td class=\"d-none d-md-table-cell\">" . $row["event"] . "</td>
+                                                <td>" . e($eventNameOrCode) . "</td>
+                                                <td class=\"d-none d-md-table-cell\">" . e($row["event"]) . "</td>
                                                 <td class=\"text-end\">
-                                                    <a href=\"viewData.php?event=" . $row["event"] . "\" class=\"btn btn-primary\" title=\"View Data\"><i class=\"fa-solid fa-file-lines\"></i> View Data</a>
-                                                    <a href=\"getRawData.php?event=" . $row["event"] . "\" class=\"btn btn-primary\" title=\"Download CSV\"><i class=\"fa-solid fa-table\"></i> Download .csv</a>
+                                                    <a href=\"viewData.php?event=" . rawurlencode($row["event"]) . "\" class=\"btn btn-primary\" title=\"View Data\"><i class=\"fa-solid fa-file-lines\"></i> View Data</a>
+                                                    <a href=\"getRawData.php?event=" . rawurlencode($row["event"]) . "\" class=\"btn btn-primary\" title=\"Download CSV\"><i class=\"fa-solid fa-table\"></i> Download .csv</a>
                                                 </td>
                                             </tr>";
                                     }

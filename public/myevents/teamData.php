@@ -53,7 +53,7 @@ $teamAutoMapGet = $db->prepare("SELECT
         echo ("</pre>");
         */
 
-        echo('<h1>' . $_GET['team'] . ' Auto Mapping</h1>');
+        echo('<h1>' . e($_GET['team']) . ' Auto Mapping</h1>');
 
         $lastMatch = 0;
         foreach ($teamAutoMapGetResultData as $submission) {
@@ -73,7 +73,7 @@ $teamAutoMapGet = $db->prepare("SELECT
             if ($submission['flagCount'] >= $flagThreshold) {
                 $checked = '';
             }
-            echo('<div class="col-sm-2"><input type="checkbox" class="submission-checkbox match-' . $submission['match'] . '" id="checkbox-' . $submission['id'] . '" data-id="' . $submission['id'] . '"' . $checked . '> <label for="checkbox-' . $submission['id'] . '">' . $submission['displayName'] . '</label></div>');
+            echo('<div class="col-sm-2"><input type="checkbox" class="submission-checkbox match-' . $submission['match'] . '" id="checkbox-' . $submission['id'] . '" data-id="' . $submission['id'] . '"' . $checked . '> <label for="checkbox-' . $submission['id'] . '">' . e($submission['displayName']) . '</label></div>');
         }
         if ($lastMatch <> 0) {
             echo('</div>');
@@ -116,7 +116,7 @@ $teamAutoMapGet = $db->prepare("SELECT
                                 if ($path['flagCount'] >= $flagThreshold) {
                                     $shown = 'display:none;';
                                 }
-                                echo('<path id="' . $path['id'] . '" d="M' . $path['map'] . '" style="fill:none;stroke:#000;stroke-width:1;' . $shown . '"></path>');
+                                echo('<path id="' . $path['id'] . '" d="M' . e($path['map']) . '" style="fill:none;stroke:#000;stroke-width:1;' . $shown . '"></path>');
                             }
                         }
                     ?>
@@ -134,7 +134,7 @@ $teamAutoMapGet = $db->prepare("SELECT
                                 if ($path['flagCount'] >= $flagThreshold) {
                                     $shown = 'display:none;';
                                 }
-                                echo('<path id="' . $path['id'] . '" d="M' . $path['map'] . '" style="fill:none;stroke:#000;stroke-width:1;' . $shown . '"></path>');
+                                echo('<path id="' . $path['id'] . '" d="M' . e($path['map']) . '" style="fill:none;stroke:#000;stroke-width:1;' . $shown . '"></path>');
                             }
                         }
                     ?>

@@ -41,7 +41,7 @@ if (isset($_POST["totp"])) {
             // Now delete all pending records for this email address.
             $sessions = $db->query("DELETE FROM `pendingScouter` WHERE `email` = '" . $pendingRecordData[0]["email"] . "'");
 
-            $authIdentifier = uniqid("bba");
+            $authIdentifier = 'bba' . bin2hex(random_bytes(20));
             $logIn = $db->prepare("INSERT INTO `scouterAuth` (`uuid`,`scouterId`,`expireDateTime`) VALUES ('" . $authIdentifier . "', ?, DATE_ADD(NOW(), INTERVAL 30 DAY))");
             $logIn->bind_param("i",$newScouterData[0]["id"]);
             $logIn->execute();
@@ -93,7 +93,7 @@ if (isset($_POST["totp"])) {
             // Now delete all pending records for this email address.
             $sessions = $db->query("DELETE FROM `pendingScouter` WHERE `email` = '" . $pendingRecordData[0]["email"] . "'");
 
-            $authIdentifier = uniqid("bba");
+            $authIdentifier = 'bba' . bin2hex(random_bytes(20));
             $logIn = $db->prepare("INSERT INTO `scouterAuth` (`uuid`,`scouterId`,`expireDateTime`) VALUES ('" . $authIdentifier . "', ?, DATE_ADD(NOW(), INTERVAL 30 DAY))");
             $logIn->bind_param("i",$newScouterData[0]["id"]);
             $logIn->execute();
@@ -138,15 +138,15 @@ echo ('<div class="container">');
             $duplicateRecordResult = $findDuplicateRecord->get_result();
             $duplicateRecordData = $duplicateRecordResult->fetch_all(MYSQLI_ASSOC);
 
-            if ($findDuplicateRecord->num_rows > 0) {
+            if ($duplicateRecordResult->num_rows > 0) {
                 echo('<div class="alert alert-info"><h3>Oops</h3>This account already exists. Please <a href="/login.php">log in</a> instead.</div>');
             } else {
 
-                if ($_POST["email"] == $_POST["emailConfirm"] && strlen($_POST["email"] > 6)) {
+                if ($_POST["email"] == $_POST["emailConfirm"] && strlen($_POST["email"]) > 6) {
                     // email addresses match. Create auth codes, send email, and prompt for TOTP
 
-                    // create token and TOTP
-                    $token = password_hash(uniqid(rand() . "bba"), PASSWORD_DEFAULT);
+                    // create token and TOTP (random_bytes: unguessable and URL-safe, unlike a bcrypt hash of uniqid)
+                    $token = bin2hex(random_bytes(32));
                     $totp = random_int(120000,989999);
                     
                     // Store token, TOTP, and sessionId in pendingScouter table.

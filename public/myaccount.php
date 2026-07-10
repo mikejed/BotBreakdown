@@ -8,8 +8,8 @@ if (isset($_POST["newEmail"]) && strlen($_POST["newEmail"]) > 4 ) {
     $addressCleanup = $db->prepare("DELETE FROM `addressChange` WHERE `scouterId` = $currentPersonId");
     $addressCleanup->execute();
 
-    $code1 = password_hash(uniqid(rand() . "bbaOld"), PASSWORD_DEFAULT);
-    $code2 = password_hash(uniqid(rand() . "bbaNew"), PASSWORD_DEFAULT);
+    $code1 = bin2hex(random_bytes(32));
+    $code2 = bin2hex(random_bytes(32));
     $addressUpdate = $db->prepare("INSERT INTO `addressChange` (`scouterId`, `newEmail`, `oldAddressCode`, `newAddressCode`, `expireDateTime`) VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 7 DAY))");
     $addressUpdate->bind_param("isss", $currentPersonId, $_POST["newEmail"], $code1, $code2);
     $addressUpdate->execute();

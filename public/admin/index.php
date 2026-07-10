@@ -132,7 +132,7 @@ $activeScouterData = $activeScouters->fetch_all(MYSQLI_ASSOC);
                     <ol>
                         <?php
                         foreach ($dataDownloadData as $event) {
-                            echo('<li>' . $event["count"] . ' download:<span class="ms-3">' . $event["data"] . '</span></li>');
+                            echo('<li>' . $event["count"] . ' download:<span class="ms-3">' . e($event["data"]) . '</span></li>');
                         }
                         ?>
                     </ol>
@@ -148,7 +148,7 @@ $activeScouterData = $activeScouters->fetch_all(MYSQLI_ASSOC);
                     <ol>
                         <?php
                         foreach ($activeScouterData as $scouter) {
-                            echo('<li>' . $scouter["count"] . ' interactions:<span class="ms-3">' . $scouter["displayName"] . '</span></li>');
+                            echo('<li>' . $scouter["count"] . ' interactions:<span class="ms-3">' . e($scouter["displayName"]) . '</span></li>');
                         }
                         ?>
                     </ol>
@@ -162,7 +162,7 @@ $activeScouterData = $activeScouters->fetch_all(MYSQLI_ASSOC);
                     <ol>
                         <?php
                         foreach ($pageViewData as $page) {
-                            echo('<li>' . $page["count"] . ' views:<span class="ms-3">' . $page["data"] . '</span></li>');
+                            echo('<li>' . $page["count"] . ' views:<span class="ms-3">' . e($page["data"]) . '</span></li>');
                         }
                         ?>
                     </ol>

@@ -29,14 +29,15 @@ $recentFlagCount = $getRecentFlagCountResultData[0]["flags"];
                     if ($flagLimit - $recentFlagCount > 0 || $isAdmin) {
                     
                         echo("<div class=\"alert alert-info\">You have flagged $recentFlagCount submissions in the last (4) days. ");
-                        if ($asAdmin) {
+                        if ($isAdmin) {
                             echo("You are an administrator so you're not limited in the number of flags you submit.</div>");
                         } else {
                             echo("You may not flag more than $flagLimit, so if you submit this, you will have " . $flagLimit - $recentFlagCount - 1 . " items left you can flag.</div>");
                         }
                         ?>
                         <form method="post" action="flagSubmission.php">
-                            <input type="hidden" name="submissionId" value="<?php echo($_GET["submissionId"]); ?>">
+                            <input type="hidden" name="csrf" value="<?php echo $csrfToken; ?>">
+                            <input type="hidden" name="submissionId" value="<?php echo e($_GET["submissionId"]); ?>">
                             <label class="form-label">Review Reason</label>
                             <textarea name="reviewReason" class="form-control"></textarea>
                             <input type="submit" />
@@ -51,6 +52,7 @@ $recentFlagCount = $getRecentFlagCountResultData[0]["flags"];
 
         // they've submitted a flag report.
         } else if (isset($_POST["submissionId"]) && isset($_POST["reviewReason"])) {
+            requireCsrf();
             if ($recentFlagCount >= $flagLimit) {
                 echo("<div class=\"alert alert-warning\">Sorry, you have reached the limit of the items you can flag for now.</div>");
                 logHistory("flagLimitReached", json_encode($_REQUEST), "submission", $_POST["submissionId"]);

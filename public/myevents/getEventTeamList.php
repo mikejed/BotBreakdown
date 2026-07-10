@@ -54,7 +54,7 @@ if ( isset($_GET["event"]) ) {
         }
 
         foreach( $a_Teams as $team ) {
-            echo("<tr><td>$team->teamNumber</td><td>$team->nameShort</td></tr>");
+            echo("<tr><td>" . e($team->teamNumber) . "</td><td>" . e($team->nameShort) . "</td></tr>");
         }
         echo("</tbody></table></body></html>");
     }

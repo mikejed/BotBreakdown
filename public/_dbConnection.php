@@ -1,12 +1,20 @@
 <?php
 $bbUserAgent = 'BotBreakdown-1.0';
-include '_connectionStrings.cfg';
+// Credentials live one level above the webroot so the webserver can never
+// serve them as plain text (see _connectionStrings.sample.php).
+include __DIR__ . '/../_connectionStrings.php';
 
 // Create connection
 $db = mysqli_connect($servername, $username, $password, $dbname);
 // Check connection
 if ($db->connect_error) {
     die("Connection failed: " . $db->connect_error);
+}
+
+// Escape a value for safe output inside HTML text or attributes. Use this on
+// anything that originated from a request or from scouter-entered data.
+function e($value) {
+    return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
 }
 
 // Create a function I can use on any page, to consistently log history.
@@ -54,8 +62,8 @@ $sessionResultData = $sessionResult->fetch_all(MYSQLI_ASSOC);
 
 // If a match isn't found, don't use the (blank or non-blank) session; ignore what was provided and create a NEW session.
 if ($sessionResult->num_rows == 0) {
-    // make the new Id
-    $currentSessionId = uniqid();
+    // make the new Id (cryptographically random; uniqid() is a guessable timestamp)
+    $currentSessionId = bin2hex(random_bytes(16));
 
     // set a session-only cookie
     setcookie("sessionId", $currentSessionId, 0, '/', 'botbreakdown.com');
@@ -67,6 +75,27 @@ if ($sessionResult->num_rows == 0) {
 }
 
 // Now we know that $currentSessionId exists and is valid. It's ok to use that on the rest of our pages.
+
+
+// ---------------------------------------------------------
+// CSRF protection (double-submit cookie)
+// ---------------------------------------------------------
+if (!isset($_COOKIE["csrfToken"]) || strlen($_COOKIE["csrfToken"]) < 32) {
+    $_COOKIE["csrfToken"] = bin2hex(random_bytes(16)); // also set in $_COOKIE so forms rendered by this same request can embed it
+    setcookie("csrfToken", $_COOKIE["csrfToken"], 0, '/', '', true, true);
+}
+$csrfToken = $_COOKIE["csrfToken"];
+
+// Call this at the top of any request that changes data. The posted token must
+// match the cookie, which a cross-site attacker can neither read nor set.
+function requireCsrf() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST'
+        || !isset($_POST['csrf'])
+        || !hash_equals($_COOKIE['csrfToken'] ?? '', $_POST['csrf'])) {
+        http_response_code(403);
+        die('Invalid or missing security token. Please go back, reload the page, and try again.');
+    }
+}
 
 
 // ---------------------------------------------------------
