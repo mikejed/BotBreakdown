@@ -70,10 +70,12 @@ if (isset($_GET['event'])) {
                 $joinColumns .= "\n";
             }
             echo ("<th>" . e($dataItem["name"]) . "</th>");
+            // Each data<id> join yields at most one row per submission (the GROUP BY key),
+            // so MAX() returns that single value while satisfying ONLY_FULL_GROUP_BY.
             if ($dataItem["dataType"] == "text") {
-                $dataPointColumns .= "data" . $dataItem["id"] . ".`dataText` AS `" . $dataItem["name"] . "`\n";
+                $dataPointColumns .= "MAX(data" . $dataItem["id"] . ".`dataText`) AS `" . $dataItem["name"] . "`\n";
             } else {
-                $dataPointColumns .= "data" . $dataItem["id"] . ".`dataValue` AS `" . $dataItem["name"] . "`\n";
+                $dataPointColumns .= "MAX(data" . $dataItem["id"] . ".`dataValue`) AS `" . $dataItem["name"] . "`\n";
             }
             
             $joinColumns .= "LEFT OUTER JOIN `submissionData` data" . $dataItem["id"] . " ON data" . $dataItem["id"] . ".`dataPointId` = " . $dataItem["id"] . " AND sub.`id` = data" . $dataItem["id"] . ".`submissionId`";

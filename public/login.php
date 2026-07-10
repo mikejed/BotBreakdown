@@ -117,7 +117,9 @@ echo ('<div class="container">');
             if ($foundScouterResult->num_rows > 0) {
                 // Account already exists. Store token, TOTP, and sessionId in scouterAuth table.
 
-                $storePending = $db->prepare("INSERT INTO scouterAuth(`scouterId`,`token`,`totp`,`expireDateTime`) VALUES (?, '" . $token . "', '" . $totp . "', DATE_ADD(NOW(), INTERVAL 1 HOUR));");
+                // uuid is filled in on confirmation; insert '' explicitly so the row is
+                // valid under a strict sql_mode (the column is NOT NULL with no default).
+                $storePending = $db->prepare("INSERT INTO scouterAuth(`uuid`,`scouterId`,`token`,`totp`,`expireDateTime`) VALUES ('', ?, '" . $token . "', '" . $totp . "', DATE_ADD(NOW(), INTERVAL 1 HOUR));");
                 $storePending->bind_param("i", $foundScouterData[0]["id"]);
                 $storePending->execute();
 

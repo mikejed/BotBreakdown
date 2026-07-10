@@ -48,7 +48,7 @@ curl_setopt_array($eventRequest, $firstCurlOpt);
 
 // run the queries for the charts
 
-$matchScores = $db->prepare("SELECT DISTINCT `match`, JSON_EXTRACT(`allianceResults`, \"$.scoreRedFinal\") AS `red`, JSON_EXTRACT(`allianceResults`, \"$.scoreBlueFinal\") AS `blue`
+$matchScores = $db->prepare("SELECT `match`, MAX(JSON_EXTRACT(`allianceResults`, \"$.scoreRedFinal\")) AS `red`, MAX(JSON_EXTRACT(`allianceResults`, \"$.scoreBlueFinal\")) AS `blue`
                             FROM `teamMatch`
                             WHERE `event` = ? AND `level` = 'qm' AND `match` > 0
                             GROUP BY `match`
