@@ -52,7 +52,8 @@ if (isset($_GET['event'])) {
         </div>");
 
     $dataPointGet = $db->prepare("SELECT dp.`id`, dp.`name`, dp.`dataType`, dp.`dataSet` FROM `dataPoint` dp WHERE `season` = ? $showAllData");
-    $dataPointGet->bind_param("i",substr($_GET['event'],0,4));
+    $season = substr($_GET['event'], 0, 4);
+    $dataPointGet->bind_param("i", $season);
     $dataPointGet->execute();
     $dataPointGetResult = $dataPointGet->get_result();
     $dataPointGetResultData = $dataPointGetResult->fetch_all(MYSQLI_ASSOC);
