@@ -1,13 +1,8 @@
 <?php
 $bbUserAgent = 'BotBreakdown-1.0';
 // Credentials live one level above the webroot so the webserver can never
-// serve them as plain text. The legacy in-webroot location is only used as a
-// fallback until the server's copy has been moved (see _connectionStrings.sample.php).
-if (file_exists(__DIR__ . '/../_connectionStrings.php')) {
-    include __DIR__ . '/../_connectionStrings.php';
-} else {
-    include __DIR__ . '/_connectionStrings.cfg';
-}
+// serve them as plain text (see _connectionStrings.sample.php).
+include __DIR__ . '/../_connectionStrings.php';
 
 // Create connection
 $db = mysqli_connect($servername, $username, $password, $dbname);
