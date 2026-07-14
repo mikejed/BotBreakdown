@@ -1,0 +1,23 @@
+# This folder is writable by the admin attachment manager AND served directly to
+# the public, so lock it down: never execute uploaded code, and neutralize any
+# script embedded in same-origin SVGs.
+
+# Refuse to serve/execute anything that could run as code here.
+<FilesMatch "\.(php|phtml|phar|php[0-9]|cgi|pl|py|sh|htaccess)$">
+    Require all denied
+</FilesMatch>
+
+# Belt-and-suspenders: strip any handler/type that would execute PHP.
+RemoveHandler .php .phtml .phar
+RemoveType .php .phtml .phar
+
+<IfModule mod_headers.c>
+    # Don't let the browser second-guess our content types.
+    Header set X-Content-Type-Options "nosniff"
+
+    # SVGs can carry <script>; sandbox them and forbid any subresource loads so
+    # opening one directly cannot run JavaScript as botbreakdown.com.
+    <FilesMatch "\.svg$">
+        Header set Content-Security-Policy "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+    </FilesMatch>
+</IfModule>

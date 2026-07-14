@@ -69,12 +69,17 @@ include './_head.php';
             </div>
         </div>
 
-        <div class="alert alert-info mt-4">
-            <h4>Latest Update</h4>
-            <p>Wow- what a season this year! Don't forget that all of the off-season events are available for scouting here as well, as long as they are listed as events on the <i>First</i> site.</p>
-            <p>In July we went through a Language Model code review and issued some bugfixes, and everything should be even better than ever. We'll be publishing a new blog post soon also, showing some patterns for analyzing the new "timing" features we introduced this season - stay tuned!</p>
-        </div>
-        
+<?php
+        // Show the newest currently-active site update (authored in /admin/updates.php).
+        // Content is trusted admin-authored HTML, so it is rendered raw like the blog.
+        $latestUpdate = $db->prepare("SELECT `title`, `content` FROM `siteUpdate` WHERE `startDateTime` < NOW() AND (`expireDateTime` > NOW() OR `expireDateTime` IS NULL) ORDER BY `startDateTime` DESC, `id` DESC LIMIT 1");
+        $latestUpdate->execute();
+        $latestUpdateData = $latestUpdate->get_result()->fetch_all(MYSQLI_ASSOC);
+        if (count($latestUpdateData) > 0) {
+            echo('<div class="alert alert-info mt-4"><h4>' . e($latestUpdateData[0]["title"]) . '</h4>' . $latestUpdateData[0]["content"] . '</div>');
+        }
+?>
+
     </div>
 
 <?php include './_footer.php'; ?>

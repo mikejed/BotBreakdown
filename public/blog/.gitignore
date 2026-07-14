@@ -1,1 +1,4 @@
-attachments/
+# Uploaded attachments are deployed out-of-band and stay untracked...
+attachments/*
+# ...but keep the security hardening for that folder in version control.
+!attachments/.htaccess

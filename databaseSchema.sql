@@ -109,6 +109,16 @@ INSERT INTO `setting` (`id`, `key`, `value`) VALUES(4, 'blueAllianceApiKey', '[Y
 INSERT INTO `setting` (`id`, `key`, `value`) VALUES(5, 'sendGridApiKey', '[YourKeyHere]');
 INSERT INTO `setting` (`id`, `key`, `value`) VALUES(6, 'firstApiAuthToken', '[YourKeyHere]');
 
+CREATE TABLE `siteUpdate` (
+  `id` int NOT NULL,
+  `title` varchar(128) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Latest Update',
+  `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `startDateTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `expireDateTime` datetime DEFAULT NULL,
+  `author` tinytext COLLATE utf8mb4_general_ci,
+  `modifiedDateTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE `submission` (
   `id` int NOT NULL,
   `teamMatchId` int NOT NULL,
@@ -172,6 +182,10 @@ ALTER TABLE `session`
 ALTER TABLE `setting`
   ADD PRIMARY KEY (`id`);
 
+ALTER TABLE `siteUpdate`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `startDateTime` (`startDateTime`);
+
 ALTER TABLE `submission`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `match-scouter` (`teamMatchId`,`scouterId`),
@@ -207,6 +221,9 @@ ALTER TABLE `scouter`
 
 ALTER TABLE `setting`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+ALTER TABLE `siteUpdate`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `submission`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;

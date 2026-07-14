@@ -65,7 +65,9 @@ $activeScouterData = $activeScouters->fetch_all(MYSQLI_ASSOC);
 <div class="container">
     <h1>Admin Tools</h1>
     <div class="row"><div class="col">
-    <a href="errors.php" class="float-end">Error log</a>
+    <a href="errors.php" class="btn btn-outline-primary btn-sm float-end">Error log</a>
+    <a href="blog.php" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-newspaper"></i> Blog Posts</a>
+    <a href="updates.php" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-bullhorn"></i> Site Updates</a>
     </div></div>
     <hr>
 

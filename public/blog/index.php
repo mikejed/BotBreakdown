@@ -115,7 +115,7 @@ if ($showIndex == 1) {
 
         echo('  <div class="card mb-3">
                     <div class="card-header">
-                        <a href="' . $item["slug"] . '"><h4 class="card-title post-title">' . $item["title"] . '</h4></a>
+                        <a href="' . rawurlencode($item["slug"]) . '"><h4 class="card-title post-title">' . $item["title"] . '</h4></a>
                         <p class="card-text blog-post-meta">
                             <span><strong>Posted on:</strong> ' . date('M j, Y', strtotime($item["startDateTime"])) . '</span> |
                             <span><strong>Author:</strong> ' . $item["author"] . '</span>
@@ -138,7 +138,7 @@ echo('          </div><!-- .col-md-10 -->
 
 echo('<ul class="ps-3">');
 foreach ($blogIndexResultData as $item) {
-    echo('<li>' . date('M j', strtotime($item["startDateTime"])) . ' <a href="' . $item['slug'] . '">' . $item["title"] . '</a></li>');
+    echo('<li>' . date('M j', strtotime($item["startDateTime"])) . ' <a href="/blog/' . rawurlencode($item['slug']) . '">' . $item["title"] . '</a></li>');
 }
 echo('</ul>');
 
