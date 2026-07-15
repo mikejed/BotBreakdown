@@ -70,7 +70,9 @@
     }
 
     function bbLoadAttachments(dir) {
-        $.getJSON('/admin/attachment.php', { action: 'list', dir: dir })
+        // cache:false makes jQuery append a unique _=timestamp so the listing is
+        // never served from a stale browser cache (see no-cache headers in attachment.php).
+        $.ajax({ url: '/admin/attachment.php', data: { action: 'list', dir: dir }, dataType: 'json', cache: false })
             .done(function (resp) {
                 if (!resp.ok) { $('#bbUploadStatus').text(resp.error || 'Could not list folder.'); return; }
                 bbCurDir = resp.dir;

@@ -12,6 +12,12 @@
 include '_adminGuard.php';
 
 header('Content-Type: application/json');
+// Never cache these responses. The list action is a GET, so without this the
+// browser (or a proxy/CDN) serves a stale directory listing and newly created
+// folders/files never appear.
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: Thu, 1 Jan 1970 00:00:00 GMT');
 
 function bb_json($arr) {
     echo json_encode($arr);

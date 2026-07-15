@@ -138,7 +138,7 @@ echo('          </div><!-- .col-md-10 -->
 
 echo('<ul class="ps-3">');
 foreach ($blogIndexResultData as $item) {
-    echo('<li>' . date('M j', strtotime($item["startDateTime"])) . ' <a href="/blog/' . rawurlencode($item['slug']) . '">' . $item["title"] . '</a></li>');
+    echo('<li>' . date('M j', strtotime($item["startDateTime"])) . ' <a href="' . rawurlencode($item['slug']) . '">' . $item["title"] . '</a></li>');
 }
 echo('</ul>');
 
