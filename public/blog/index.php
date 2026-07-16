@@ -5,7 +5,8 @@ include '../_head.php';
 $slug = isset($_GET['request']) ? $_GET['request'] : '';
 
 
-// ------------- BEGIN PAGE BODY ---------------
+// ------------- Query preparations ---------------
+// Get the most recent (10) posts for display on the main index page.
 $blogIndex = $db->prepare("SELECT
                             *
                         FROM
@@ -24,6 +25,29 @@ $blogIndex = $db->prepare("SELECT
 $blogIndex->execute();
 $blogIndexResult = $blogIndex->get_result();
 $blogIndexResultData = $blogIndexResult->fetch_all(MYSQLI_ASSOC);
+
+// The sidebar shows EVERY published post grouped by year, so it uses its own
+// query without the 10 post LIMIT that the main index uses.
+// It selects only the columns the sidebar needs (no content longtext).
+$sidebarIndex = $db->prepare("SELECT
+                                `id`
+                                , `slug`
+                                , `title`
+                                , `startDateTime`
+                            FROM
+                                `blog`
+                            WHERE
+                                `startDateTime` < NOW()
+                                AND (
+                                    `expireDateTime` > NOW()
+                                    OR `expireDateTime` IS NULL
+                                )
+                            ORDER BY `startDateTime` DESC, `id` DESC
+                        ");
+$sidebarIndex->execute();
+$sidebarPosts = $sidebarIndex->get_result()->fetch_all(MYSQLI_ASSOC);
+
+// ------------- BEGIN PAGE BODY ---------------
 
 echo('<div class="container">');
 $showIndex = 1;
@@ -67,7 +91,7 @@ if (isset($slug) && $slug != "") {
                         <h5 class="modal-title" id="imageModalLabel">Image Detail</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
+                    <div class="modal-body text-center">
                         <img id="modalImage" class="img-fluid" src="" alt="Image Detail">
                     </div>
                 </div>
@@ -136,11 +160,43 @@ echo('          </div><!-- .col-md-10 -->
                     <strong style="font-size: 1rem;">Posts</strong>'
     );
 
-echo('<ul class="ps-3">');
-foreach ($blogIndexResultData as $item) {
-    echo('<li>' . date('M j', strtotime($item["startDateTime"])) . ' <a href="' . rawurlencode($item['slug']) . '">' . $item["title"] . '</a></li>');
+// ------------- Sidebar: list of posts by year ---------------
+
+// Group by publish year. The query is startDateTime DESC, so years are
+// encountered newest-first and stay in that order.
+$postsByYear = [];
+foreach ($sidebarPosts as $item) {
+    $postsByYear[date('Y', strtotime($item['startDateTime']))][] = $item;
 }
-echo('</ul>');
+
+// Which year is expanded by default: the open article's year if it's in the
+// list, otherwise the latest (top) year.
+$expandYear = $postsByYear ? (string)array_key_first($postsByYear) : '';
+if ($showIndex == 0 && isset($blogPostResultData)) {
+    $articleYear = date('Y', strtotime($blogPostResultData['startDateTime']));
+    if (isset($postsByYear[$articleYear])) {
+        $expandYear = $articleYear;
+    }
+}
+
+echo('<style>.year-caret{transition:transform .15s ease;}.year-toggle:not(.collapsed) .year-caret{transform:rotate(90deg);}</style>');
+echo('<div id="postYears">');
+
+foreach ($postsByYear as $postYear => $yearPosts) {
+    $isOpen = ((string)$postYear === $expandYear);
+    $cid = 'year-' . $postYear;
+    echo('<div class="mb-1">'
+        . '<button class="btn btn-link btn-sm p-0 text-decoration-none year-toggle' . ($isOpen ? '' : ' collapsed') . '" type="button" data-bs-toggle="collapse" data-bs-target="#' . $cid . '" aria-expanded="' . ($isOpen ? 'true' : 'false') . '" aria-controls="' . $cid . '">'
+        . '<i class="fa-solid fa-chevron-right fa-fw year-caret"></i><strong>' . $postYear . '</strong>'
+        . '</button>'
+        . '<div class="collapse' . ($isOpen ? ' show' : '') . '" id="' . $cid . '"><ul class="ps-3 mb-2">');
+    foreach ($yearPosts as $item) {
+        echo('<li>' . date('M j', strtotime($item["startDateTime"])) . ' <a href="' . rawurlencode($item['slug']) . '">' . $item["title"] . '</a></li>');
+    }
+    echo('</ul></div></div>');
+}
+
+echo('</div>');
 
 echo('          </div><!-- /.col-md-2 -->
             </div><!-- /.row -->
