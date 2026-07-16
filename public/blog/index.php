@@ -55,7 +55,7 @@ if (isset($slug) && $slug != "") {
                             <span><strong>Author:</strong> ' . $blogPostResultData["author"] . '</span>
                         </p>
                     </div>
-                    <div class="card-body">' . $blogPostResultData["content"] . '</div>
+                    <div class="card-body blog-body">' . $blogPostResultData["content"] . '</div>
                 </div>
             ');
         ?>
